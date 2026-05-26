@@ -1,9 +1,16 @@
-venv/
 offline_rl_env/
+venv/
 __pycache__/
 *.pth
 *.pt
-data/
-checkpoints/
-logs/
-results/
+*.pt
+# Contenu des dossiers ignoré, pas les dossiers eux-mêmes
+data/*
+checkpoints/*
+logs/*
+results/*
+# Mais garder la structure
+!data/.gitkeep
+!checkpoints/.gitkeep
+!logs/.gitkeep
+!results/.gitkeep

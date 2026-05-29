@@ -9,15 +9,7 @@ Datasets retenus :
     - halfcheetah-medium-v2
     - walker2d-medium-v2
 
-Hyperparamètres communs :
-    OBS_DIM      : selon dataset (voir DATASET_CONFIGS)
-    ACT_DIM      : selon dataset (voir DATASET_CONFIGS)
-    BATCH_SIZE   : 256
-    BUFFER_SIZE  : 1_000_000
-    ROLLOUT_LEN  : 5      (longueur max des rollouts synthétiques)
-    DEVICE       : "cuda" si disponible, sinon "cpu"
-
-Clés standard du batch (alignées sur Minari / D4RL) :
+Clés standard du batch :
     "observations"      : Tensor (batch, obs_dim)  float32
     "actions"           : Tensor (batch, act_dim)  float32
     "rewards"           : Tensor (batch, 1)        float32
@@ -34,12 +26,12 @@ import torch
 # HYPERPARAMÈTRES COMMUNS
 # ─────────────────────────────────────────────
 
-BATCH_SIZE        = 256
-BUFFER_SIZE       = 1_000_000
-ROLLOUT_LEN       = 5
-GAMMA             = 0.99
-UNCERTAINTY_LIMIT = 0.5   # seuil unique partagé par Vine, MCTS, VAE
-DEVICE            = "cuda" if torch.cuda.is_available() else "cpu"
+BATCH_SIZE             = 256
+BUFFER_SIZE            = 1_000_000
+ROLLOUT_LEN            = 5
+GAMMA                  = 0.99
+UNCERTAINTY_PERCENTILE = 90.0   # percentile calibré sur D — partagé par Vine, MCTS, VAE
+DEVICE                 = "cuda" if torch.cuda.is_available() else "cpu"
 
 # ─────────────────────────────────────────────
 # CLÉS STANDARD DU BATCH
@@ -78,7 +70,6 @@ DATASET_CONFIGS: Dict[str, dict] = {
     },
 }
 
-# Dataset par défaut pour les tests rapides
 DEFAULT_DATASET = "hopper-medium-v2"
 
 # ─────────────────────────────────────────────
@@ -105,9 +96,7 @@ def normalized_score(env_name: str, raw_return: float) -> float:
     """
     Normalise un return brut selon la convention D4RL :
         score = (raw - random) / (expert - random) * 100
-
-    Retourne un score en % (100 = niveau expert, 0 = niveau random).
-    Utilisé dans evaluate.py pour comparer les 4 policies sur le même axe.
+    Retourne un score en % (100 = expert, 0 = random).
     """
     if env_name not in NORMALIZATION_SCORES:
         raise ValueError(
@@ -119,6 +108,51 @@ def normalized_score(env_name: str, raw_return: float) -> float:
 
 
 # ─────────────────────────────────────────────
+# SEUIL D'INCERTITUDE — fonction partagée
+# ─────────────────────────────────────────────
+
+def calibrate_threshold(
+    world_model,
+    buffer,
+    percentile : float = UNCERTAINTY_PERCENTILE,
+    n_samples  : int   = 2000,
+) -> float:
+    """
+    Calibre le seuil d'incertitude sur le percentile p90 de D.
+
+    Logique :
+        1. Échantillonne n_samples transitions réelles depuis D
+        2. Calcule l'incertitude du world model sur ces transitions
+        3. Retourne le percentile 90
+           → 90% des transitions réelles passent le filtre
+           → 10% les plus incertaines sont rejetées
+
+    Appelé une fois au début de chaque augment().
+    Même résultat pour les 3 méthodes si même buffer D.
+
+    Exemple :
+        uncertainty sur D : max=0.054
+        seuil p90         : ~0.021
+        → rejette ce qui est plus incertain que 90% des données réelles
+    """
+    n_samples = min(n_samples, buffer.size)
+    batch     = buffer.sample(n_samples)
+
+    with torch.no_grad():
+        u = world_model.uncertainty(
+            batch["observations"].to(DEVICE),
+            batch["actions"].to(DEVICE),
+        )  # (n_samples, 1)
+
+    threshold = torch.quantile(u.squeeze(), percentile / 100.0).item()
+
+    print(f"  [calibrate_threshold] p{int(percentile)} = {threshold:.4f}  "
+          f"(mean={u.mean():.4f}  max={u.max():.4f})")
+
+    return threshold
+
+
+# ─────────────────────────────────────────────
 # INTERFACE 1 — ReplayBuffer  (implémenté par A)
 # ─────────────────────────────────────────────
 
@@ -126,8 +160,6 @@ class ReplayBufferInterface(ABC):
     """
     Contrat que data_loader.py doit respecter.
     B appelle uniquement .sample() et .add_batch() — rien d'autre.
-
-    Toutes les clés du batch suivent REQUIRED_KEYS.
     """
 
     @abstractmethod
@@ -150,26 +182,14 @@ class ReplayBufferInterface(ABC):
     def add_batch(self, batch: Dict[str, torch.Tensor]) -> None:
         """
         Ajoute des transitions synthétiques au buffer.
-        Appelé par vine_augment, mcts_augment, vae_augment.
-
         batch doit contenir exactement REQUIRED_KEYS.
         Lève KeyError si une clé est absente ou non reconnue.
-
-        Exemple d'appel depuis un augmenteur :
-            buffer.add_batch({
-                "observations"      : s,       # Tensor (N, obs_dim)
-                "actions"           : a,       # Tensor (N, act_dim)
-                "rewards"           : r,       # Tensor (N, 1)
-                "next_observations" : s_next,  # Tensor (N, obs_dim)
-                "terminals"         : d,       # Tensor (N, 1)
-            })
         """
         ...
 
     @property
     @abstractmethod
     def size(self) -> int:
-        """Nombre de transitions actuellement dans le buffer."""
         ...
 
     @property
@@ -196,33 +216,26 @@ class WorldModelInterface(ABC):
     @abstractmethod
     def predict(
         self,
-        state  : torch.Tensor,  # (batch, obs_dim) ou (obs_dim,)
-        action : torch.Tensor,  # (batch, act_dim) ou (act_dim,)
+        state  : torch.Tensor,
+        action : torch.Tensor,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         """
-        Prédit le prochain état et la récompense.
         Retourne : (next_state, reward)
-            next_state : Tensor (batch, obs_dim)  float32
-            reward     : Tensor (batch, 1)        float32
-
+            next_state : Tensor (batch, obs_dim)
+            reward     : Tensor (batch, 1)
         Supporte batch ET single sample (auto-reshape interne).
-        Tous les tenseurs retournés sont sur DEVICE.
         """
         ...
 
     @abstractmethod
     def uncertainty(
         self,
-        state  : torch.Tensor,  # (batch, obs_dim)
-        action : torch.Tensor,  # (batch, act_dim)
-    ) -> torch.Tensor:          # (batch, 1) — variance de l'ensemble
+        state  : torch.Tensor,
+        action : torch.Tensor,
+    ) -> torch.Tensor:
         """
-        Retourne l'incertitude épistémique du modèle (variance inter-membres).
-        Utilisé par Vine, MCTS et VAE pour filtrer les transitions hors distribution.
-
-        Seuil à appliquer : rejeter si uncertainty > UNCERTAINTY_LIMIT (= 0.5).
-        Ce seuil est défini une seule fois dans ce fichier pour garantir
-        une comparaison équitable entre les 3 méthodes.
+        Retourne la variance inter-membres : Tensor (batch, 1).
+        Utilisé par calibrate_threshold() et les 3 augmenteurs.
         """
         ...
 
@@ -233,10 +246,7 @@ class WorldModelInterface(ABC):
         n_epochs  : int = 50,
         batch_size: int = BATCH_SIZE,
     ) -> dict:
-        """
-        Entraîne le world model sur le buffer.
-        Retourne : {"train_loss": float, "val_loss": float}
-        """
+        """Retourne : {"train_loss": float, "val_loss": float}"""
         ...
 
 
@@ -247,7 +257,7 @@ class WorldModelInterface(ABC):
 class AugmenterInterface(ABC):
     """
     Contrat commun pour vine_augment, mcts_augment, vae_augment.
-    A appelle uniquement .augment() dans iql_trainer.
+    A appelle uniquement .augment() dans run_all.py.
     """
 
     @abstractmethod
@@ -258,50 +268,49 @@ class AugmenterInterface(ABC):
         n_new_transitions: int = 50_000,
     ) -> ReplayBufferInterface:
         """
-        Génère n_new_transitions synthétiques via world_model.
-        Retourne un NOUVEAU buffer contenant :
-            - les transitions originales de buffer
-            - les transitions synthétiques ajoutées
+        Génère n_new_transitions synthétiques.
+        Retourne un NOUVEAU buffer = D original + transitions synthétiques.
         Le buffer original n'est PAS modifié.
 
-        Les transitions dont uncertainty > UNCERTAINTY_LIMIT
-        doivent être rejetées avant l'ajout au nouveau buffer.
+        Seuil : appeler calibrate_threshold(world_model, buffer)
+        au début de augment() — même valeur pour les 3 méthodes.
         """
         ...
 
     @property
     @abstractmethod
     def name(self) -> str:
-        """Nom de la méthode : 'VINE', 'MCTS', ou 'VAE'"""
+        """'VINE', 'MCTS', ou 'VAE'"""
         ...
 
 
 # ─────────────────────────────────────────────
-# VÉRIFICATION RAPIDE — python interfaces.py
+# VÉRIFICATION RAPIDE — python src/interfaces.py
 # ─────────────────────────────────────────────
 
 if __name__ == "__main__":
     print("=== Vérification interfaces.py ===")
-    print(f"Device            : {DEVICE}")
-    print(f"Batch size        : {BATCH_SIZE}")
-    print(f"Uncertainty limit : {UNCERTAINTY_LIMIT}")
-    print(f"Datasets          : {list(DATASET_CONFIGS.keys())}")
-    print(f"Default dataset   : {DEFAULT_DATASET}")
+    print(f"Device                 : {DEVICE}")
+    print(f"Batch size             : {BATCH_SIZE}")
+    print(f"Uncertainty percentile : {UNCERTAINTY_PERCENTILE}")
+    print(f"Datasets               : {list(DATASET_CONFIGS.keys())}")
+    print(f"Default dataset        : {DEFAULT_DATASET}")
     print()
     print("Clés standard du batch :")
     for k in sorted(REQUIRED_KEYS):
         print(f"  - {k}")
     print()
     print("Interfaces définies :")
-    print("  ✓ ReplayBufferInterface — .sample() → dict, .add_batch(dict), .size, .obs_dim, .act_dim")
-    print("  ✓ WorldModelInterface   — .predict(), .uncertainty(), .train_model()")
-    print("  ✓ AugmenterInterface    — .augment(), .name")
+    print("  ✓ ReplayBufferInterface — .sample() .add_batch() .size .obs_dim .act_dim")
+    print("  ✓ WorldModelInterface   — .predict() .uncertainty() .train_model()")
+    print("  ✓ AugmenterInterface    — .augment() .name")
+    print("  ✓ calibrate_threshold() — partagé par Vine, MCTS, VAE")
     print()
     print("Test normalized_score :")
     for env in DATASET_CONFIGS:
         ref = NORMALIZATION_SCORES[env]
-        score_random = normalized_score(env, ref["random"])
-        score_expert = normalized_score(env, ref["expert"])
-        print(f"  {env:<30}  random={score_random:.1f}%  expert={score_expert:.1f}%")
+        s_r = normalized_score(env, ref["random"])
+        s_e = normalized_score(env, ref["expert"])
+        print(f"  {env:<30}  random={s_r:.1f}%  expert={s_e:.1f}%")
     print()
     print("Contrats OK — A et B peuvent commencer.")

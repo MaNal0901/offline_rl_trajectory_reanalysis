@@ -10,7 +10,7 @@ B appelle uniquement .predict() et .uncertainty() — rien d'autre.
 Rôle dans le pipeline :
     - Vine  : génère les rollouts synthétiques
     - MCTS  : moteur de simulation de l'arbre
-    - VAE   : filtre les transitions générées (uncertainty > UNCERTAINTY_LIMIT)
+    - VAE   : filtre les transitions générées (uncertainty > calibrate_threshold(wm, buffer))
 
 Usage rapide :
     python src/world_model.py
@@ -31,7 +31,7 @@ from interfaces import (
     ReplayBufferInterface,
     DEVICE,
     BATCH_SIZE,
-    UNCERTAINTY_LIMIT,
+    UNCERTAINTY_PERCENTILE, 
     DATASET_CONFIGS,
     DEFAULT_DATASET,
 )
@@ -91,7 +91,7 @@ class WorldModel(WorldModelInterface):
     B appelle :
         next_obs, reward = world_model.predict(obs, act)
         u                = world_model.uncertainty(obs, act)
-        # rejeter si u > UNCERTAINTY_LIMIT
+        # rejeter si u >calibrate_threshold(wm, buffer)
     """
 
     def __init__(
@@ -185,7 +185,7 @@ class WorldModel(WorldModelInterface):
     ) -> torch.Tensor:
         """
         Retourne la variance inter-membres sur le delta prédit.
-        Règle partagée : rejeter si uncertainty > UNCERTAINTY_LIMIT (= 0.5)
+        Règle partagée : rejeter si uncertainty > calibrate_threshold(wm, buffer)
 
         Retourne : (B, 1)
         """
@@ -432,11 +432,8 @@ if __name__ == "__main__":
     print("\n── Test uncertainty() ─────────────────────────────────")
     u = wm.uncertainty(obs_t, act_t)
     assert u.shape == (8, 1)
-    in_dist = (u <= UNCERTAINTY_LIMIT).sum().item()
-    ood     = (u >  UNCERTAINTY_LIMIT).sum().item()
-    print(f"  shape : {tuple(u.shape)}  ✓")
     print(f"  min={u.min():.4f}  max={u.max():.4f}  mean={u.mean():.4f}")
-    print(f"  sous seuil {UNCERTAINTY_LIMIT} : {in_dist}/8  |  rejetées : {ood}/8")
+    print(f"  (seuil calibré dynamiquement via calibrate_threshold)")
 
     # ── 6. Test save / load ───────────────────────────────────────────────
     print("\n── Test save / load ───────────────────────────────────")

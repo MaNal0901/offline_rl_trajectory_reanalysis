@@ -1,0 +1,42 @@
+{
+  "scores": {
+    "hopper-medium-v2": {
+      "baseline": 9.04,
+      "vine": 9.04,
+      "mcts": 9.01,
+      "vae": 9.03
+    }
+  },
+  "logs": {
+    "hopper-medium-v2": {
+      "baseline": {
+        "final_v_loss": 0.04662813991308212,
+        "final_q_loss": 21.909786224365234,
+        "final_actor_loss": 1.3076837062835693,
+        "buffer_size": 1000000,
+        "score": 9.04
+      },
+      "vine": {
+        "final_v_loss": 0.0315474197268486,
+        "final_q_loss": 21.63455581665039,
+        "final_actor_loss": 2.664724111557007,
+        "buffer_size": 1022154,
+        "score": 9.04
+      },
+      "mcts": {
+        "final_v_loss": 0.033673062920570374,
+        "final_q_loss": 19.86578369140625,
+        "final_actor_loss": 2.71804141998291,
+        "buffer_size": 1050000,
+        "score": 9.01
+      },
+      "vae": {
+        "final_v_loss": 0.009140455164015293,
+        "final_q_loss": 18.677749633789062,
+        "final_actor_loss": 4.7916436195373535,
+        "buffer_size": 1050000,
+        "score": 9.03
+      }
+    }
+  }
+}

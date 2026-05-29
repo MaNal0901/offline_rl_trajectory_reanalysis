@@ -1,0 +1,5 @@
+env,method,buffer_size,final_v_loss,final_q_loss,final_actor_loss,score
+hopper-medium-v2,baseline,1000000,0.0466,21.9098,1.3077,9.04
+hopper-medium-v2,vine,1022154,0.0315,21.6346,2.6647,9.04
+hopper-medium-v2,mcts,1050000,0.0337,19.8658,2.718,9.01
+hopper-medium-v2,vae,1050000,0.0091,18.6777,4.7916,9.03

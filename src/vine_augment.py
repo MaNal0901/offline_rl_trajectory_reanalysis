@@ -126,6 +126,11 @@ class VineAugmenter(AugmenterInterface):
 
                     next_state = next_state.squeeze(0).cpu()
                     reward     = reward.squeeze(0).cpu().view(1)
+                    reward = reward.clamp(
+                            all_data["rewards"].min(),
+                            all_data["rewards"].max()
+                        )
+
 
                     synth_obs.append(current_state.cpu())
                     synth_act.append(action.cpu())

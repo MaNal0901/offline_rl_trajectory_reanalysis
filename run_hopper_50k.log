@@ -1,0 +1,125 @@
+
+============================================================
+EXPÉRIENCE : hopper-medium-v2  |  steps=50,000  |  seed=42
+============================================================
+
+[1/4] Chargement dataset...
+[ReplayBuffer] Chargement : data/hopper-medium-v2.hdf5
+  ✓  1,000,000 transitions
+  ✓ obs_dim  = 11
+  ✓ act_dim  = 3
+  ✓ rewards  : min=0.549  max=5.944  mean=3.109
+  ✓ épisodes terminés : 2185
+
+[2/4] World model...
+  Checkpoint trouvé — chargement checkpoints/wm_hopper-medium-v2.pt
+[WorldModel] Chargé depuis checkpoints/wm_hopper-medium-v2.pt
+
+[3/4] IQL — 4 méthodes...
+
+────────────────────────────────────────
+  Méthode : BASELINE
+────────────────────────────────────────
+  Buffer : D original (1,000,000 transitions)
+
+[IQL] Entraînement — method=baseline  buffer=1,000,000  steps=50,000
+  step       1/50,000  v=0.0466  q=21.9098  π=1.3077
+  step   5,000/50,000  v=0.1930  q=1.4969  π=-2.9025
+  step  10,000/50,000  v=0.4212  q=9.2167  π=-2.8593
+  step  15,000/50,000  v=1.0304  q=16.9726  π=-18.4307
+  step  20,000/50,000  v=1.6528  q=12.8335  π=-10.9487
+  step  25,000/50,000  v=1.5984  q=12.1087  π=-26.0162
+  step  30,000/50,000  v=1.8965  q=13.4342  π=-40.2586
+  step  35,000/50,000  v=1.0261  q=7.9739  π=-13.9611
+  step  40,000/50,000  v=1.8797  q=21.7741  π=-61.6760
+  step  45,000/50,000  v=1.4124  q=9.4996  π=-16.8291
+  step  50,000/50,000  v=1.1521  q=10.3926  π=-32.2309
+[IQL] Terminé — method=baseline
+[IQL] Sauvegardé → checkpoints/iql_baseline_hopper-medium-v2.pt
+  → BASELINE score : 9.04
+
+────────────────────────────────────────
+  Méthode : VINE
+────────────────────────────────────────
+
+[Vine] Augmentation — cible 50,000 transitions (h=5, k=5)
+  [calibrate_threshold] p90 = 0.0012  (mean=0.0007  max=0.0261)
+[Vine] Branch points : 2,001  × h=5 × k=5
+[ReplayBuffer] +23,511 transitions → total 1,023,511
+[Vine] Générées   : 23,511
+[Vine] Rejetées   : 7,984  (acceptance rate = 74.6%)
+[Vine] Buffer D′  : 1,023,511 transitions
+  Buffer : D′ augmenté (1,023,511 transitions)
+
+[IQL] Entraînement — method=vine  buffer=1,023,511  steps=50,000
+  step       1/50,000  v=0.0215  q=21.2016  π=3.8612
+  step   5,000/50,000  v=0.1592  q=2.0894  π=-2.6942
+  step  10,000/50,000  v=0.5379  q=4.8273  π=-5.2833
+  step  15,000/50,000  v=2.0246  q=5.4656  π=-7.9181
+  step  20,000/50,000  v=4.1121  q=12.3223  π=-32.5475
+  step  25,000/50,000  v=101.6882  q=106.2094  π=-23.4381
+  step  30,000/50,000  v=6047.4468  q=3253.4468  π=-49.1671
+  step  35,000/50,000  v=46661.9922  q=14626.4062  π=-46.1700
+  step  40,000/50,000  v=656678.1250  q=232024.8750  π=-55.1799
+  step  45,000/50,000  v=2218555.0000  q=1086944.2500  π=-53.6417
+  step  50,000/50,000  v=8983929.0000  q=5299436.0000  π=-32.9531
+[IQL] Terminé — method=vine
+[IQL] Sauvegardé → checkpoints/iql_vine_hopper-medium-v2.pt
+  → VINE score : 9.04
+
+────────────────────────────────────────
+  Méthode : MCTS
+────────────────────────────────────────
+
+[MCTS] Augmentation — cible 50,000 transitions (sims=20, depth=5, k=5)
+  [calibrate_threshold] p90 = 0.0011  (mean=0.0006  max=0.0188)
+[MCTS] Branch points : 2,001
+[ReplayBuffer] +50,000 transitions → total 1,050,000
+[MCTS] Générées  : 50,000
+[MCTS] Buffer D′ : 1,050,000 transitions
+  Buffer : D′ augmenté (1,050,000 transitions)
+
+[IQL] Entraînement — method=mcts  buffer=1,050,000  steps=50,000
+  step       1/50,000  v=0.0135  q=18.4049  π=2.6061
+  step   5,000/50,000  v=0.1954  q=1.3784  π=-0.5827
+  step  10,000/50,000  v=0.3512  q=6.3737  π=-4.7980
+  step  15,000/50,000  v=1.0696  q=7.6875  π=-14.1906
+  step  20,000/50,000  v=1.9182  q=13.5740  π=-14.3186
+  step  25,000/50,000  v=1.9174  q=10.0000  π=-10.1707
+  step  30,000/50,000  v=2.3009  q=17.3821  π=-11.4223
+  step  35,000/50,000  v=1.4324  q=8.3107  π=-8.0031
+  step  40,000/50,000  v=1.6161  q=11.3985  π=-38.2134
+  step  45,000/50,000  v=1.5530  q=12.8738  π=-15.2526
+  step  50,000/50,000  v=1.8100  q=5.9417  π=-14.6511
+[IQL] Terminé — method=mcts
+[IQL] Sauvegardé → checkpoints/iql_mcts_hopper-medium-v2.pt
+  → MCTS score : 9.03
+
+────────────────────────────────────────
+  Méthode : VAE
+────────────────────────────────────────
+
+[VAE] Augmentation — cible 50,000 transitions
+[VAE] Entraînement — 30 epochs, latent_dim=32, β=1.0
+  epoch   1/30  loss=0.3723  recon=0.1669  kl=0.2053
+  epoch  10/30  loss=0.3002  recon=0.1042  kl=0.1960
+  epoch  20/30  loss=0.2958  recon=0.1014  kl=0.1945
+Traceback (most recent call last):
+  File "/workspaces/offline_rl_trajectory_reanalysis/src/run_all.py", line 281, in <module>
+    main()
+  File "/workspaces/offline_rl_trajectory_reanalysis/src/run_all.py", line 262, in main
+    scores, logs       = run_experiment(
+                         ^^^^^^^^^^^^^^^
+  File "/workspaces/offline_rl_trajectory_reanalysis/src/run_all.py", line 127, in run_experiment
+    buf_train = augmenter.augment(
+                ^^^^^^^^^^^^^^^^^^
+  File "/workspaces/offline_rl_trajectory_reanalysis/src/vae_augment.py", line 237, in augment
+    self._vae.train_vae(buffer, n_epochs=self.vae_epochs)
+  File "/workspaces/offline_rl_trajectory_reanalysis/src/vae_augment.py", line 174, in train_vae
+    for ob_b, ac_b in loader:
+  File "/workspaces/offline_rl_trajectory_reanalysis/offline_rl_env/lib/python3.12/site-packages/torch/utils/data/dataloader.py", line 627, in __next__
+    with torch.autograd.profiler.record_function(self._profile_name):
+  File "/workspaces/offline_rl_trajectory_reanalysis/offline_rl_env/lib/python3.12/site-packages/torch/autograd/profiler.py", line 610, in __exit__
+    def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any):
+
+KeyboardInterrupt

@@ -6,9 +6,6 @@ __pycache__/
 *.pt
 # Contenu des dossiers ignoré, pas les dossiers eux-mêmes
 data/*
-checkpoints/*
-logs/*
-results/*
 # Mais garder la structure
 !data/.gitkeep
 !checkpoints/.gitkeep

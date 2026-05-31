@@ -1,0 +1,162 @@
+
+============================================================
+EXPÉRIENCE : walker2d-medium-v2  |  steps=50,000  |  seed=42
+============================================================
+
+[1/4] Chargement dataset...
+[ReplayBuffer] Chargement : data/walker2d-medium-v2.hdf5
+  ✓  1,000,000 transitions
+  ✓ obs_dim  = 17
+  ✓ act_dim  = 6
+  ✓ rewards  : min=-2.557  max=8.469  mean=3.394
+  ✓ épisodes terminés : 513
+
+[2/4] World model...
+  Checkpoint trouvé — chargement checkpoints/wm_walker2d-medium-v2.pt
+[WorldModel] Chargé depuis checkpoints/wm_walker2d-medium-v2.pt
+
+[3/4] IQL — 4 méthodes...
+
+────────────────────────────────────────
+  Méthode : BASELINE
+────────────────────────────────────────
+  Buffer : D original (1,000,000 transitions)
+
+[IQL] Entraînement — method=baseline  buffer=1,000,000  steps=50,000
+  step       1/50,000  v=0.1779  q=32.8388  π=1.7349
+  step   5,000/50,000  v=0.2902  q=11.6998  π=-3.9979
+  step  10,000/50,000  v=1.0319  q=34.9372  π=-20.6667
+  step  15,000/50,000  v=1.4188  q=59.9635  π=-37.1579
+  step  20,000/50,000  v=1.2628  q=30.9252  π=-62.9440
+  step  25,000/50,000  v=3.1895  q=47.7523  π=-94.1415
+  step  30,000/50,000  v=1.2126  q=30.1600  π=-46.8888
+  step  35,000/50,000  v=1.4477  q=33.8291  π=-64.5051
+  step  40,000/50,000  v=3.6536  q=44.4541  π=-79.6982
+  step  45,000/50,000  v=2.1038  q=22.7338  π=-44.9590
+  step  50,000/50,000  v=3.1917  q=42.2333  π=-32.9916
+[IQL] Terminé — method=baseline
+[IQL] Sauvegardé → checkpoints/iql_baseline_walker2d-medium-v2.pt
+  → BASELINE score : 7.36
+
+────────────────────────────────────────
+  Méthode : VINE
+────────────────────────────────────────
+
+[Vine] Augmentation — cible 50,000 transitions (h=5, k=5)
+  [calibrate_threshold] p90 = 0.0344  (mean=0.0155  max=0.4718)
+[Vine] Branch points : 2,001  × h=5 × k=5
+[ReplayBuffer] +8,125 transitions → total 1,008,125
+[Vine] Générées   : 8,125
+[Vine] Rejetées   : 9,294  (acceptance rate = 46.6%)
+[Vine] Buffer D′  : 1,008,125 transitions
+  Buffer : D′ augmenté (1,008,125 transitions)
+
+[IQL] Entraînement — method=vine  buffer=1,008,125  steps=50,000
+  step       1/50,000  v=0.0161  q=25.8887  π=7.1529
+  step   5,000/50,000  v=0.4196  q=4.8521  π=-14.5507
+  step  10,000/50,000  v=1.3237  q=15.9432  π=-51.5716
+  step  15,000/50,000  v=2.2053  q=20.3680  π=-23.2921
+  step  20,000/50,000  v=2.1698  q=30.1396  π=-43.3920
+  step  25,000/50,000  v=2.7255  q=25.5775  π=-80.3496
+  step  30,000/50,000  v=6.9218  q=32.2229  π=-26.1776
+  step  35,000/50,000  v=1.6393  q=43.6870  π=-41.4705
+  step  40,000/50,000  v=2.7377  q=30.1766  π=-114.5298
+  step  45,000/50,000  v=2.6806  q=37.4342  π=-84.3919
+  step  50,000/50,000  v=7.0280  q=25.8400  π=-74.9488
+[IQL] Terminé — method=vine
+[IQL] Sauvegardé → checkpoints/iql_vine_walker2d-medium-v2.pt
+  → VINE score : 7.36
+
+────────────────────────────────────────
+  Méthode : MCTS
+────────────────────────────────────────
+
+[MCTS] Augmentation — cible 50,000 transitions (sims=20, depth=5, k=5)
+  [calibrate_threshold] p90 = 0.0378  (mean=0.0169  max=0.5752)
+[MCTS] Branch points : 2,001
+[ReplayBuffer] +28,459 transitions → total 1,028,459
+[MCTS] Générées  : 28,459
+[MCTS] Buffer D′ : 1,028,459 transitions
+  Buffer : D′ augmenté (1,028,459 transitions)
+
+[IQL] Entraînement — method=mcts  buffer=1,028,459  steps=50,000
+  step       1/50,000  v=0.0175  q=22.7625  π=5.4015
+  step   5,000/50,000  v=0.5033  q=7.0352  π=-9.6930
+  step  10,000/50,000  v=1.7588  q=33.7674  π=-47.8032
+  step  15,000/50,000  v=2.1650  q=20.0928  π=-7.3789
+  step  20,000/50,000  v=2.4553  q=23.1090  π=-41.6662
+  step  25,000/50,000  v=1.6802  q=43.1089  π=-18.9179
+  step  30,000/50,000  v=2.8335  q=60.3209  π=-98.1301
+  step  35,000/50,000  v=2.6268  q=40.4285  π=-108.3088
+  step  40,000/50,000  v=1.8939  q=47.6444  π=-38.8913
+  step  45,000/50,000  v=3.8707  q=89.9370  π=-80.9588
+  step  50,000/50,000  v=3.5973  q=32.6076  π=-57.5179
+[IQL] Terminé — method=mcts
+[IQL] Sauvegardé → checkpoints/iql_mcts_walker2d-medium-v2.pt
+  → MCTS score : 7.35
+
+────────────────────────────────────────
+  Méthode : VAE
+────────────────────────────────────────
+
+[VAE] Augmentation — cible 50,000 transitions
+[VAE] Entraînement — 30 epochs, latent_dim=32, β=1.0
+  epoch   1/30  loss=0.4309  recon=0.2371  kl=0.1938
+  epoch  10/30  loss=0.3492  recon=0.1529  kl=0.1963
+  epoch  20/30  loss=0.3449  recon=0.1494  kl=0.1955
+  epoch  30/30  loss=0.3431  recon=0.1481  kl=0.1949
+[VAE] Terminé — loss=0.3431
+  [calibrate_threshold] p90 = 0.0345  (mean=0.0159  max=0.3270)
+[ReplayBuffer] +50,000 transitions → total 1,050,000
+[VAE] Générées  : 50,000
+[VAE] Rejetées  : 16,635  (acceptance rate = 75.0%)
+[VAE] Buffer D′ : 1,050,000 transitions
+  Buffer : D′ augmenté (1,050,000 transitions)
+
+[IQL] Entraînement — method=vae  buffer=1,050,000  steps=50,000
+  step       1/50,000  v=0.0803  q=24.0133  π=23.7960
+  step   5,000/50,000  v=0.2280  q=2.8137  π=-8.2080
+  step  10,000/50,000  v=0.5113  q=11.0903  π=-13.6246
+  step  15,000/50,000  v=0.7516  q=52.5766  π=-41.2156
+  step  20,000/50,000  v=1.6691  q=15.9611  π=-33.9515
+  step  25,000/50,000  v=2.5539  q=27.8978  π=-84.7281
+  step  30,000/50,000  v=3.9422  q=64.8075  π=-33.2615
+  step  35,000/50,000  v=3.0642  q=27.9849  π=-38.1196
+  step  40,000/50,000  v=2.8658  q=80.0757  π=-62.5145
+  step  45,000/50,000  v=2.0727  q=24.8708  π=-46.9061
+  step  50,000/50,000  v=2.4098  q=37.2883  π=-52.0173
+[IQL] Terminé — method=vae
+[IQL] Sauvegardé → checkpoints/iql_vae_walker2d-medium-v2.pt
+  → VAE score : 7.38
+
+  JSON → results/scores.json
+  CSV  → results/scores.csv
+  Logs → results/logs.csv
+
+============================================================
+TABLEAU — Normalized Score (%)
+============================================================
+env                          baseline     vine     mcts      vae
+------------------------------------------------------------
+walker2d-medium-v2               7.36      7.36      7.35      7.38
+
+============================================================
+TABLEAU — Buffer Size
+============================================================
+env                           baseline      vine      mcts       vae
+------------------------------------------------------------
+walker2d-medium-v2           1,000,000  1,008,125  1,028,459  1,050,000
+
+============================================================
+TABLEAU — Final Q Loss
+============================================================
+env                          baseline     vine     mcts      vae
+------------------------------------------------------------
+walker2d-medium-v2            42.2333   25.8400   32.6076   37.2883
+
+[4/4] Done.
+  results/scores.json
+  results/scores.csv
+  results/logs.csv
+
+Prochaine étape : python src/evaluate.py

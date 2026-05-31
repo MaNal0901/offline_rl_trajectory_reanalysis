@@ -1,0 +1,91 @@
+
+============================================================
+SENSITIVITY ANALYSIS — Vine Uncertainty Percentile
+env=hopper-medium-v2  steps=5,000
+============================================================
+
+[1/2] Chargement buffer...
+[ReplayBuffer] Chargement : data/hopper-medium-v2.hdf5
+  ✓  1,000,000 transitions
+  ✓ obs_dim  = 11
+  ✓ act_dim  = 3
+  ✓ rewards  : min=0.549  max=5.944  mean=3.109
+  ✓ épisodes terminés : 2185
+
+[2/2] World model...
+[WorldModel] Chargé depuis checkpoints/wm_hopper-medium-v2.pt
+  Checkpoint chargé depuis checkpoints/wm_hopper-medium-v2.pt
+
+──────────────────────────────────────────────────
+  Vine — percentile=50.0  steps=5,000
+──────────────────────────────────────────────────
+  seuil p50 = 0.0002  (mean=0.0006  max=0.0260)
+TEST percentile=50.0 threshold=0.000234
+
+[Vine] Augmentation — cible 50,000 transitions (h=5, k=5)
+  [calibrate_threshold] p50 = 0.0002 (fixé)
+[Vine] Branch points : 2,001  × h=5 × k=5
+[ReplayBuffer] +5,669 transitions → total 1,005,669
+[Vine] Générées   : 5,669
+[Vine] Rejetées   : 9,795  (acceptance rate = 36.7%)
+[Vine] Buffer D′  : 1,005,669 transitions
+  Transitions ajoutées : 5,669
+
+[IQL] Entraînement — method=vine_p50  buffer=1,005,669  steps=5,000
+  step       1/5,000  v=0.0087  q=20.6891  π=1.4177
+  step   5,000/5,000  v=0.1209  q=0.9550  π=-0.6659
+[IQL] Terminé — method=vine_p50
+  q_loss final = 0.9550  |  score proxy = -0.955
+
+──────────────────────────────────────────────────
+  Vine — percentile=75.0  steps=5,000
+──────────────────────────────────────────────────
+  seuil p75 = 0.0005  (mean=0.0006  max=0.0260)
+TEST percentile=75.0 threshold=0.000492
+
+[Vine] Augmentation — cible 50,000 transitions (h=5, k=5)
+  [calibrate_threshold] p75 = 0.0005 (fixé)
+[Vine] Branch points : 2,001  × h=5 × k=5
+[ReplayBuffer] +12,753 transitions → total 1,012,753
+[Vine] Générées   : 12,753
+[Vine] Rejetées   : 9,298  (acceptance rate = 57.8%)
+[Vine] Buffer D′  : 1,012,753 transitions
+  Transitions ajoutées : 12,753
+
+[IQL] Entraînement — method=vine_p75  buffer=1,012,753  steps=5,000
+  step       1/5,000  v=0.0073  q=20.6596  π=1.4577
+  step   5,000/5,000  v=0.1371  q=1.0428  π=-2.4455
+[IQL] Terminé — method=vine_p75
+  q_loss final = 1.0428  |  score proxy = -1.0428
+
+──────────────────────────────────────────────────
+  Vine — percentile=90.0  steps=5,000
+──────────────────────────────────────────────────
+  seuil p90 = 0.0011  (mean=0.0006  max=0.0260)
+TEST percentile=90.0 threshold=0.001108
+
+[Vine] Augmentation — cible 50,000 transitions (h=5, k=5)
+  [calibrate_threshold] p90 = 0.0011 (fixé)
+[Vine] Branch points : 2,001  × h=5 × k=5
+[ReplayBuffer] +21,910 transitions → total 1,021,910
+[Vine] Générées   : 21,910
+[Vine] Rejetées   : 8,259  (acceptance rate = 72.6%)
+[Vine] Buffer D′  : 1,021,910 transitions
+  Transitions ajoutées : 21,910
+
+[IQL] Entraînement — method=vine_p90  buffer=1,021,910  steps=5,000
+  step       1/5,000  v=0.0087  q=19.6267  π=1.4863
+  step   5,000/5,000  v=0.1510  q=1.2235  π=-0.6664
+[IQL] Terminé — method=vine_p90
+  q_loss final = 1.2235  |  score proxy = -1.2235
+
+  CSV → results/sensitivity_vine.csv
+
+============================================================
+TABLEAU — Sensitivity Analysis : Vine Percentile
+============================================================
+  percentile  threshold   n_added  buffer_size   q_loss  score_proxy
+------------------------------------------------------------
+  p50             0.0002     5,669    1,005,669   0.9550      -0.9550
+  p75             0.0005    12,753    1,012,753   1.0428      -1.0428
+  p90             0.0011    21,910    1,021,910   1.2235      -1.2235

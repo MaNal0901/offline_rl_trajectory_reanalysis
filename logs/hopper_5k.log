@@ -1,0 +1,126 @@
+
+============================================================
+EXPÉRIENCE : hopper-medium-v2  |  steps=5,000  |  seed=42
+============================================================
+
+[1/4] Chargement dataset...
+[ReplayBuffer] Chargement : data/hopper-medium-v2.hdf5
+  ✓  1,000,000 transitions
+  ✓ obs_dim  = 11
+  ✓ act_dim  = 3
+  ✓ rewards  : min=0.549  max=5.944  mean=3.109
+  ✓ épisodes terminés : 2185
+
+[2/4] World model...
+  Checkpoint trouvé — chargement checkpoints/wm_hopper-medium-v2.pt
+[WorldModel] Chargé depuis checkpoints/wm_hopper-medium-v2.pt
+
+[3/4] IQL — 4 méthodes...
+
+────────────────────────────────────────
+  Méthode : BASELINE
+────────────────────────────────────────
+  Buffer : D original (1,000,000 transitions)
+
+[IQL] Entraînement — method=baseline  buffer=1,000,000  steps=5,000
+  step       1/5,000  v=0.0466  q=21.9098  π=1.3077
+  step   5,000/5,000  v=0.1930  q=1.4969  π=-2.9025
+[IQL] Terminé — method=baseline
+[IQL] Sauvegardé → checkpoints/iql_baseline_hopper-medium-v2.pt
+  → BASELINE score : 9.04
+
+────────────────────────────────────────
+  Méthode : VINE
+────────────────────────────────────────
+
+[Vine] Augmentation — cible 50,000 transitions (h=5, k=5)
+  [calibrate_threshold] p90 = 0.0011  (mean=0.0006  max=0.0221)
+[Vine] Branch points : 2,001  × h=5 × k=5
+[ReplayBuffer] +22,428 transitions → total 1,022,428
+[Vine] Générées   : 22,428
+[Vine] Rejetées   : 8,197  (acceptance rate = 73.2%)
+[Vine] Buffer D′  : 1,022,428 transitions
+  Buffer : D′ augmenté (1,022,428 transitions)
+
+[IQL] Entraînement — method=vine  buffer=1,022,428  steps=5,000
+  step       1/5,000  v=0.0302  q=19.9321  π=4.2298
+  step   5,000/5,000  v=0.1708  q=1.8436  π=0.0836
+[IQL] Terminé — method=vine
+[IQL] Sauvegardé → checkpoints/iql_vine_hopper-medium-v2.pt
+  → VINE score : 9.03
+
+────────────────────────────────────────
+  Méthode : MCTS
+────────────────────────────────────────
+
+[MCTS] Augmentation — cible 50,000 transitions (sims=20, depth=5, k=5)
+  [calibrate_threshold] p90 = 0.0010  (mean=0.0006  max=0.0258)
+[MCTS] Branch points : 2,001
+[ReplayBuffer] +50,000 transitions → total 1,050,000
+[MCTS] Générées  : 50,000
+[MCTS] Buffer D′ : 1,050,000 transitions
+  Buffer : D′ augmenté (1,050,000 transitions)
+
+[IQL] Entraînement — method=mcts  buffer=1,050,000  steps=5,000
+  step       1/5,000  v=0.0236  q=20.8086  π=2.9665
+  step   5,000/5,000  v=0.1785  q=2.3002  π=-2.9065
+[IQL] Terminé — method=mcts
+[IQL] Sauvegardé → checkpoints/iql_mcts_hopper-medium-v2.pt
+  → MCTS score : 9.03
+
+────────────────────────────────────────
+  Méthode : VAE
+────────────────────────────────────────
+
+[VAE] Augmentation — cible 50,000 transitions
+[VAE] Entraînement — 30 epochs, latent_dim=32, β=1.0
+  epoch   1/30  loss=0.3710  recon=0.1676  kl=0.2034
+  epoch  10/30  loss=0.3007  recon=0.1043  kl=0.1964
+  epoch  20/30  loss=0.2963  recon=0.1022  kl=0.1941
+  epoch  30/30  loss=0.2942  recon=0.1014  kl=0.1928
+[VAE] Terminé — loss=0.2942
+  [calibrate_threshold] p90 = 0.0011  (mean=0.0006  max=0.0200)
+[ReplayBuffer] +50,000 transitions → total 1,050,000
+[VAE] Générées  : 50,000
+[VAE] Rejetées  : 13,099  (acceptance rate = 79.2%)
+[VAE] Buffer D′ : 1,050,000 transitions
+  Buffer : D′ augmenté (1,050,000 transitions)
+
+[IQL] Entraînement — method=vae  buffer=1,050,000  steps=5,000
+  step       1/5,000  v=0.0376  q=21.2584  π=4.0391
+  step   5,000/5,000  v=0.1189  q=1.5835  π=0.0114
+[IQL] Terminé — method=vae
+[IQL] Sauvegardé → checkpoints/iql_vae_hopper-medium-v2.pt
+  → VAE score : 9.03
+
+  JSON → results/scores.json
+  CSV  → results/scores.csv
+  Logs → results/logs.csv
+
+============================================================
+TABLEAU — Normalized Score (%)
+============================================================
+env                          baseline     vine     mcts      vae
+------------------------------------------------------------
+hopper-medium-v2                 9.04      9.03      9.03      9.03
+
+============================================================
+TABLEAU — Buffer Size
+============================================================
+env                           baseline      vine      mcts       vae
+------------------------------------------------------------
+hopper-medium-v2             1,000,000  1,022,428  1,050,000  1,050,000
+
+============================================================
+TABLEAU — Final Q Loss
+============================================================
+env                          baseline     vine     mcts      vae
+------------------------------------------------------------
+hopper-medium-v2               1.4969    1.8436    2.3002    1.5835
+
+[4/4] Done.
+  results/scores.json
+  results/scores.csv
+  results/logs.csv
+
+Prochaine étape : python src/evaluate.py

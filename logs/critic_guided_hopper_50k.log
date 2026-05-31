@@ -1,0 +1,65 @@
+
+============================================================
+CRITIC-GUIDED REANALYSIS — hopper-medium-v2
+warmup=5,000  final=50,000  n_sel=10,000  n_new=50,000
+============================================================
+
+[0] Chargement dataset et world model...
+[ReplayBuffer] Chargement : data/hopper-medium-v2.hdf5
+  ✓  1,000,000 transitions
+  ✓ obs_dim  = 11
+  ✓ act_dim  = 3
+  ✓ rewards  : min=0.549  max=5.944  mean=3.109
+  ✓ épisodes terminés : 2185
+[WorldModel] Chargé depuis checkpoints/wm_hopper-medium-v2.pt
+
+[1] Warm-up critic — 5,000 steps...
+  step 1,000/5,000
+  step 2,000/5,000
+  step 3,000/5,000
+  step 4,000/5,000
+  step 5,000/5,000
+[1] Critic prêt — Q(s,a) et V(s) disponibles
+
+[2] Sélection critic-guided — top 10,000 / 1,000,000...
+  A(s,a) mean = -0.0510
+  A(s,a) max  = 5.2218
+  A > 0       = 47.4%
+  A moyen sélectionnés = 1.9569  (vs -0.0510 tout D)  ← doit être plus élevé ✓
+
+[3] MCTS sur 10,000 états ciblés...
+[ReplayBuffer] +10,000 transitions → total 10,000
+  Mini-buffer : 10,000 transitions ciblées (obs_dim=11, act_dim=3)
+
+[MCTS] Augmentation — cible 50,000 transitions (sims=20, depth=5, k=5)
+  [calibrate_threshold] p90 = 0.0026  (mean=0.0012  max=0.0301)
+[MCTS] Branch points : 2,001
+[ReplayBuffer] +50,000 transitions → total 60,000
+[MCTS] Générées  : 50,000
+[MCTS] Buffer D′ : 60,000 transitions
+[ReplayBuffer] +50,000 transitions → total 1,050,000
+  +50,000 transitions synthétiques ciblées → D′
+  D′ final : 1,050,000 transitions
+
+[4] IQL final — 50,000 steps sur D′ ciblé...
+
+[IQL] Entraînement — method=critic_guided_mcts  buffer=1,050,000  steps=50,000
+  step       1/50,000  v=0.0112  q=21.2040  π=2.8214
+  step  10,000/50,000  v=5.6002  q=9.5177  π=-1.7277
+  step  20,000/50,000  v=29.5324  q=120.8945  π=-9.2419
+  step  30,000/50,000  v=52.4046  q=279.1136  π=-20.4518
+  step  40,000/50,000  v=172.0061  q=117.3876  π=-21.9073
+  step  50,000/50,000  v=193.5362  q=200.6876  π=-10.1991
+[IQL] Terminé — method=critic_guided_mcts
+[IQL] Sauvegardé → checkpoints/iql_critic_guided_hopper-medium-v2.pt
+
+============================================================
+RÉSULTATS — Critic-Guided MCTS
+============================================================
+  États sélectionnés     : 10,000
+  A moyen tout D         : -0.0510
+  A moyen sélectionnés   : 1.9569  ← doit être > tout D
+  Transitions ajoutées   : 50,000
+  Q-loss final           : 200.6876
+  Sauvegardé → results/critic_guided_hopper-medium-v2.json
+============================================================

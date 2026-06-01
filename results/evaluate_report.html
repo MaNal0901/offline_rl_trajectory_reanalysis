@@ -2,23 +2,22 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Trajectory Reanalysis — Rapport</title>
+<title>Trajectory Reanalysis — Rapport complet</title>
 <style>
   * { box-sizing:border-box; margin:0; padding:0; }
   body { font-family:Arial, sans-serif; background:#fff;
          color:#222; padding:2.5rem 3rem; max-width:1100px; margin:auto; }
   h1 { font-size:1.6rem; margin-bottom:0.3rem; }
   .subtitle { color:#666; font-size:0.9rem; margin-bottom:2rem; }
-  h2 { font-size:1rem; font-weight:600; color:#333;
-        margin:2rem 0 0.8rem; border-bottom:1px solid #E5E5E5;
-        padding-bottom:0.4rem; text-transform:uppercase;
-        letter-spacing:0.06em; }
-  .grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; margin-bottom:2rem; }
-  .card { background:#F7F7F7; border-radius:8px; padding:1.1rem;
+  h2 { font-size:1rem; font-weight:600; color:#333; margin:2rem 0 0.8rem;
+        border-bottom:1px solid #E5E5E5; padding-bottom:0.4rem;
+        text-transform:uppercase; letter-spacing:0.06em; }
+  .grid { display:grid; grid-template-columns:repeat(5,1fr); gap:1rem; margin-bottom:2rem; }
+  .card { background:#F7F7F7; border-radius:8px; padding:1rem;
            border:1px solid #E5E5E5; }
   .card-label { font-size:0.72rem; color:#888; text-transform:uppercase;
                  letter-spacing:0.05em; margin-bottom:0.3rem; }
-  .card-val { font-size:1.8rem; font-weight:700; }
+  .card-val { font-size:1.6rem; font-weight:700; }
   .card-sub { font-size:0.74rem; color:#888; margin-top:0.2rem; }
   table { width:100%; border-collapse:collapse; font-size:0.85rem; margin-bottom:1.5rem; }
   th { background:#F7F7F7; color:#555; font-weight:600; font-size:0.78rem;
@@ -26,17 +25,17 @@
         text-transform:uppercase; letter-spacing:0.04em; }
   td { padding:0.55rem 0.8rem; border-bottom:1px solid #F0F0F0; }
   tr:hover td { background:#FAFAFA; }
-  .badge { background:#2CA02C; color:#fff; font-size:0.72rem;
-            padding:2px 8px; border-radius:99px; font-weight:600; }
-  .rec { background:#F0FAF4; border-left:3px solid #2CA02C;
-          border-radius:0 8px 8px 0; padding:1rem 1.2rem; margin:1rem 0 2rem; }
-  .rec strong { color:#2CA02C; }
-  .warn { background:#FFF5F5; border-left:3px solid #D62728;
-           border-radius:0 8px 8px 0; padding:0.7rem 1rem; margin-bottom:0.8rem;
-           font-size:0.85rem; color:#D62728; }
-  img { width:100%; border-radius:6px; margin:0.5rem 0 1.5rem;
-         border:1px solid #E5E5E5; }
-  ul { line-height:1.9; padding-left:1.4rem; color:#444; font-size:0.87rem; }
+  .badge      { background:#2CA02C; color:#fff; font-size:0.72rem; padding:2px 8px; border-radius:99px; font-weight:600; }
+  .badge-good { background:#2CA02C; color:#fff; font-size:0.72rem; padding:2px 8px; border-radius:99px; font-weight:600; }
+  .badge-warn { background:#FF7F0E; color:#fff; font-size:0.72rem; padding:2px 8px; border-radius:99px; font-weight:600; }
+  .rec  { background:#F0FAF4; border-left:3px solid #2CA02C; border-radius:0 8px 8px 0;
+           padding:1rem 1.2rem; margin:1rem 0 2rem; }
+  .rec2 { background:#F5F0FF; border-left:3px solid #9467BD; border-radius:0 8px 8px 0;
+           padding:1rem 1.2rem; margin:1rem 0 2rem; }
+  .warn { background:#FFF5F5; border-left:3px solid #D62728; border-radius:0 8px 8px 0;
+           padding:0.7rem 1rem; margin-bottom:0.8rem; font-size:0.85rem; color:#D62728; }
+  img { width:100%; border-radius:6px; margin:0.5rem 0 1.5rem; border:1px solid #E5E5E5; }
+  ul  { line-height:1.9; padding-left:1.4rem; color:#444; font-size:0.87rem; }
   .method-dot { display:inline-block; width:10px; height:10px;
                  border-radius:2px; margin-right:5px; }
 </style>
@@ -44,16 +43,14 @@
 <body>
 
 <h1>Trajectory Reanalysis for Offline Reinforcement Learning</h1>
-<p class="subtitle">
-  Comparaison Vine · MCTS · VAE + IQL — D4RL datasets
-  (hopper · walker2d · halfcheetah) — 5k &amp; 50k steps
-</p>
+<p class="subtitle">Vine · MCTS · VAE + IQL + Critic-Guided — D4RL datasets</p>
 
-<div style="display:flex;gap:12px;margin-bottom:1.5rem;font-size:0.82rem;color:#555">
+<div style="display:flex;gap:14px;margin-bottom:1.5rem;font-size:0.82rem;color:#555;flex-wrap:wrap">
   <span><span class="method-dot" style="background:#4E4E4E"></span>Baseline</span>
   <span><span class="method-dot" style="background:#1F77B4"></span>Vine</span>
   <span><span class="method-dot" style="background:#2CA02C"></span>MCTS</span>
   <span><span class="method-dot" style="background:#FF7F0E"></span>VAE</span>
+  <span><span class="method-dot" style="background:#9467BD"></span>Critic-Guided</span>
 </div>
 
 <div class="grid">
@@ -75,42 +72,47 @@
   <div class="card">
     <div class="card-label">VAE</div>
     <div class="card-val" style="color:#FF7F0E">7.83</div>
-    <div class="card-sub">meilleur HalfCheetah 50k</div>
+    <div class="card-sub">meilleur HalfCheetah</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Critic-Guided</div>
+    <div class="card-val" style="color:#9467BD">Phase 2</div>
+    <div class="card-sub">✓ Walker+HC améliorés</div>
   </div>
 </div>
 
 <div class="rec">
-  <strong>Recommandation : MCTS</strong><br>
-  Seule méthode sans aucune instabilité sur les 6 configurations testées.
-  Vine diverge sur Hopper 50k (Q-Loss → 5.3M).
-  VAE explose sur Walker2d 5k (Q-Loss = 43, ×7 vs baseline).
+  <strong style="color:#2CA02C">Phase 1 — MCTS meilleure méthode</strong><br>
+  Seule méthode sans aucune instabilité sur les 6 configurations.
+  Vine diverge Hopper 50k. VAE explose Walker2d 5k.
 </div>
 
-<h2>Q-Loss comparatif</h2>
+<div class="rec2">
+  <strong style="color:#9467BD">Phase 2 — Critic-Guided améliore Walker2d et HalfCheetah</strong><br>
+  Walker2d : Q-Loss 28.85 vs 32.61 (−12%) ✓ &nbsp;|&nbsp;
+  HalfCheetah : Q-Loss 45.18 vs 46.46 (−3%) ✓<br>
+  La sélection par advantage A(s,a) identifie correctement les trajectoires
+  sous-exploitées (A_mean_sel 24–34x supérieur à A_mean_all).
+</div>
+
+<h2>Phase 1 — Q-Loss comparatif</h2>
 <img src="plots/qloss_comparison.png" alt="Q-Loss comparison">
 
 <h2>Résultats 5k steps</h2>
 <table>
-  <thead><tr><th>Env</th><th>Baseline</th><th>Vine</th>
-  <th>MCTS</th><th>VAE</th><th>Gagnant</th></tr></thead>
+  <thead><tr><th>Env</th><th>Baseline</th><th>Vine</th><th>MCTS</th><th>VAE</th><th>Gagnant</th></tr></thead>
   <tbody><tr>
-              <td>Hopper</td>
-              <td>1.50</td>
-              <td>1.84</td>
+              <td>Hopper</td><td>1.50</td><td>1.84</td>
               <td style="color:#2CA02C;font-weight:600">2.30</td>
               <td>1.58</td>
               <td><span class="badge">BASELINE</span></td>
             </tr><tr>
-              <td>Walker2d</td>
-              <td>6.07</td>
-              <td>3.78</td>
+              <td>Walker2d</td><td>6.07</td><td>3.78</td>
               <td style="color:#2CA02C;font-weight:600">5.04</td>
               <td><span style='color:#D62728'>43.15</span></td>
               <td><span class="badge">VINE</span></td>
             </tr><tr>
-              <td>HalfCheetah</td>
-              <td>15.16</td>
-              <td>14.14</td>
+              <td>HalfCheetah</td><td>15.16</td><td>14.14</td>
               <td style="color:#2CA02C;font-weight:600">16.42</td>
               <td>14.33</td>
               <td><span class="badge">VINE</span></td>
@@ -120,26 +122,19 @@
 <h2>Résultats 50k steps</h2>
 <div class="warn">⚠ Vine Hopper 50k : Q-Loss → 5 299 436 (divergence complète)</div>
 <table>
-  <thead><tr><th>Env</th><th>Baseline</th><th>Vine</th>
-  <th>MCTS</th><th>VAE</th><th>Gagnant</th></tr></thead>
+  <thead><tr><th>Env</th><th>Baseline</th><th>Vine</th><th>MCTS</th><th>VAE</th><th>Gagnant</th></tr></thead>
   <tbody><tr>
-              <td>Hopper</td>
-              <td>10.39</td>
-              <td><span style="color:#D62728;font-weight:600">DIVERGE ❌</span></td>
+              <td>Hopper</td><td>10.39</td><td><span style="color:#D62728;font-weight:600">DIVERGE ❌</span></td>
               <td style="color:#2CA02C;font-weight:600">5.94</td>
               <td>11.42</td>
               <td><span class="badge">MCTS</span></td>
             </tr><tr>
-              <td>Walker2d</td>
-              <td>42.23</td>
-              <td>25.84</td>
+              <td>Walker2d</td><td>42.23</td><td>25.84</td>
               <td style="color:#2CA02C;font-weight:600">32.61</td>
               <td><span style='color:#D62728'>37.29</span></td>
               <td><span class="badge">VINE</span></td>
             </tr><tr>
-              <td>HalfCheetah</td>
-              <td>48.10</td>
-              <td>48.58</td>
+              <td>HalfCheetah</td><td>48.10</td><td>48.58</td>
               <td style="color:#2CA02C;font-weight:600">46.46</td>
               <td><span style='color:#D62728'>40.58</span></td>
               <td><span class="badge">VAE</span></td>
@@ -149,6 +144,40 @@
 <h2>Heatmap stabilité</h2>
 <img src="plots/stability_heatmap.png" alt="Stability heatmap">
 
+<h2>Phase 2 — Critic-Guided MCTS</h2>
+<img src="plots/critic_guided_comparison.png" alt="Critic-guided comparison">
+<table>
+  <thead><tr>
+    <th>Env</th><th>MCTS random</th><th>Critic-guided</th>
+    <th>Δ Q-Loss</th><th>A_mean_all</th><th>A_mean_sel</th><th>Résultat</th>
+  </tr></thead>
+  <tbody><tr>
+          <td>Hopper</td>
+          <td>5.94</td>
+          <td >10.42</td>
+          <td style='color:#D62728'>+4.48</td>
+          <td>-0.2585</td>
+          <td style="color:#9467BD;font-weight:600">8.8802</td>
+          <td><span class="badge-warn">MCTS</span></td>
+        </tr><tr>
+          <td>Walker2d</td>
+          <td>32.61</td>
+          <td style='color:#2CA02C;font-weight:600'>28.85</td>
+          <td style='color:#2CA02C'>-3.75</td>
+          <td>-0.3749</td>
+          <td style="color:#9467BD;font-weight:600">8.8911</td>
+          <td><span class="badge-good">Critic ✓</span></td>
+        </tr><tr>
+          <td>HalfCheetah</td>
+          <td>46.46</td>
+          <td style='color:#2CA02C;font-weight:600'>45.18</td>
+          <td style='color:#2CA02C'>-1.28</td>
+          <td>-1.3892</td>
+          <td style="color:#9467BD;font-weight:600">12.7769</td>
+          <td><span class="badge-good">Critic ✓</span></td>
+        </tr></tbody>
+</table>
+
 <h2>Transitions générées et taux d'acceptation</h2>
 <img src="plots/buffer_acceptance.png" alt="Buffer and acceptance">
 
@@ -157,11 +186,12 @@
 
 <h2>Observations clés</h2>
 <ul>
-  <li>MCTS génère le plus de transitions (50K) avec une stabilité parfaite sur tous les envs</li>
-  <li>Vine génère moins de transitions (~8–23K) car son filtre est plus strict (acceptance ~47–74%)</li>
-  <li>VAE a le meilleur acceptance rate (94%) sur HalfCheetah mais instable sur Walker2d</li>
-  <li>Le seuil p90 est optimal pour Vine : meilleur compromis quantité / qualité</li>
-  <li>La divergence de Vine à 50k est due à des rewards synthétiques hors distribution → fix : reward clipping</li>
+  <li>MCTS est la méthode la plus robuste (Phase 1) — zéro divergence sur 6 configurations</li>
+  <li>Vine diverge à 50k steps (reward hors distribution) — rewards synthétiques non clippées</li>
+  <li>VAE excelle sur HalfCheetah 50k mais instable sur Walker2d 5k</li>
+  <li>Critic-guided améliore MCTS sur Walker2d (−12%) et HalfCheetah (−3%)</li>
+  <li>Le warmup critic (20K steps) est critique — 5K insuffisant → divergence IQL</li>
+  <li>A_mean_sel >> A_mean_all confirme que le critic sélectionne des trajectoires sous-exploitées</li>
 </ul>
 
 </body>

@@ -1,10 +1,10 @@
 {
   "env": "hopper-medium-v2",
-  "n_selected": 10000,
-  "n_synth_added": 50000,
+  "n_selected": 5000,
+  "n_synth_added": 5000,
   "buffer_D": 1000000,
-  "buffer_Dprime": 1050000,
-  "adv_mean_all": -0.051,
-  "adv_mean_sel": 1.9569,
-  "final_q_loss": 200.6876
+  "buffer_Dprime": 1005000,
+  "adv_mean_all": -0.2585,
+  "adv_mean_sel": 8.8802,
+  "final_q_loss": 10.4224
 }

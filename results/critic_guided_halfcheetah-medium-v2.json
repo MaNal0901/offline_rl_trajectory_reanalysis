@@ -1,0 +1,10 @@
+{
+  "env": "halfcheetah-medium-v2",
+  "n_selected": 10000,
+  "n_synth_added": 50000,
+  "buffer_D": 1000000,
+  "buffer_Dprime": 1050000,
+  "adv_mean_all": -0.3036,
+  "adv_mean_sel": 3.9371,
+  "final_q_loss": 62.7231
+}

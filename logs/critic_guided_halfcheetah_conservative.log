@@ -1,0 +1,80 @@
+
+============================================================
+CRITIC-GUIDED REANALYSIS — halfcheetah-medium-v2
+warmup=20,000  final=50,000  n_sel=5,000  n_new=5,000
+============================================================
+
+[0] Chargement dataset et world model...
+[ReplayBuffer] Chargement : data/halfcheetah-medium-v2.hdf5
+  ✓  1,000,000 transitions
+  ✓ obs_dim  = 17
+  ✓ act_dim  = 6
+  ✓ rewards  : min=-2.835  max=8.327  mean=4.770
+  ✓ épisodes terminés : 0
+[WorldModel] Chargé depuis checkpoints/wm_halfcheetah-medium-v2.pt
+
+[1] Warm-up critic — 20,000 steps...
+  step 1,000/20,000
+  step 2,000/20,000
+  step 3,000/20,000
+  step 4,000/20,000
+  step 5,000/20,000
+  step 6,000/20,000
+  step 7,000/20,000
+  step 8,000/20,000
+  step 9,000/20,000
+  step 10,000/20,000
+  step 11,000/20,000
+  step 12,000/20,000
+  step 13,000/20,000
+  step 14,000/20,000
+  step 15,000/20,000
+  step 16,000/20,000
+  step 17,000/20,000
+  step 18,000/20,000
+  step 19,000/20,000
+  step 20,000/20,000
+[1] Critic prêt — Q(s,a) et V(s) disponibles
+
+[2] Sélection critic-guided — top 5,000 / 1,000,000...
+  A(s,a) mean = -1.3892
+  A(s,a) max  = 35.7119
+  A > 0       = 38.3%
+  A moyen sélectionnés = 12.7769  (vs -1.3892 tout D)  ← doit être plus élevé ✓
+
+[3] MCTS sur 5,000 états ciblés...
+[ReplayBuffer] +5,000 transitions → total 5,000
+  Mini-buffer : 5,000 transitions ciblées (obs_dim=17, act_dim=6)
+
+[MCTS] Augmentation — cible 5,000 transitions (sims=20, depth=5, k=5)
+  [calibrate_threshold] p90 = 0.2415  (mean=0.1106  max=6.0623)
+[MCTS] Branch points : 201
+[ReplayBuffer] +5,000 transitions → total 10,000
+[MCTS] Générées  : 5,000
+[MCTS] Buffer D′ : 10,000 transitions
+[ReplayBuffer] +5,000 transitions → total 1,005,000
+  +5,000 transitions synthétiques ciblées → D′
+  D′ final : 1,005,000 transitions
+
+[4] IQL final — 50,000 steps sur D′ ciblé...
+
+[IQL] Entraînement — method=critic_guided_mcts  buffer=1,005,000  steps=50,000
+  step       1/50,000  v=0.2885  q=41.7786  π=40.8546
+  step  10,000/50,000  v=3.7669  q=51.4604  π=-140.6148
+  step  20,000/50,000  v=8.0607  q=67.3505  π=-229.2686
+  step  30,000/50,000  v=8.4928  q=96.3555  π=-223.5093
+  step  40,000/50,000  v=4.9159  q=60.6659  π=-158.9939
+  step  50,000/50,000  v=4.6715  q=45.1761  π=-170.6826
+[IQL] Terminé — method=critic_guided_mcts
+[IQL] Sauvegardé → checkpoints/iql_critic_guided_halfcheetah-medium-v2.pt
+
+============================================================
+RÉSULTATS — Critic-Guided MCTS
+============================================================
+  États sélectionnés     : 5,000
+  A moyen tout D         : -1.3892
+  A moyen sélectionnés   : 12.7769  ← doit être > tout D
+  Transitions ajoutées   : 5,000
+  Q-loss final           : 45.1761
+  Sauvegardé → results/critic_guided_halfcheetah-medium-v2_conservative.json
+============================================================

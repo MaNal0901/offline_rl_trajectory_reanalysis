@@ -1,0 +1,80 @@
+
+============================================================
+CRITIC-GUIDED REANALYSIS — walker2d-medium-v2
+warmup=20,000  final=50,000  n_sel=5,000  n_new=5,000
+============================================================
+
+[0] Chargement dataset et world model...
+[ReplayBuffer] Chargement : data/walker2d-medium-v2.hdf5
+  ✓  1,000,000 transitions
+  ✓ obs_dim  = 17
+  ✓ act_dim  = 6
+  ✓ rewards  : min=-2.557  max=8.469  mean=3.394
+  ✓ épisodes terminés : 513
+[WorldModel] Chargé depuis checkpoints/wm_walker2d-medium-v2.pt
+
+[1] Warm-up critic — 20,000 steps...
+  step 1,000/20,000
+  step 2,000/20,000
+  step 3,000/20,000
+  step 4,000/20,000
+  step 5,000/20,000
+  step 6,000/20,000
+  step 7,000/20,000
+  step 8,000/20,000
+  step 9,000/20,000
+  step 10,000/20,000
+  step 11,000/20,000
+  step 12,000/20,000
+  step 13,000/20,000
+  step 14,000/20,000
+  step 15,000/20,000
+  step 16,000/20,000
+  step 17,000/20,000
+  step 18,000/20,000
+  step 19,000/20,000
+  step 20,000/20,000
+[1] Critic prêt — Q(s,a) et V(s) disponibles
+
+[2] Sélection critic-guided — top 5,000 / 1,000,000...
+  A(s,a) mean = -0.3749
+  A(s,a) max  = 39.0826
+  A > 0       = 45.6%
+  A moyen sélectionnés = 8.8911  (vs -0.3749 tout D)  ← doit être plus élevé ✓
+
+[3] MCTS sur 5,000 états ciblés...
+[ReplayBuffer] +5,000 transitions → total 5,000
+  Mini-buffer : 5,000 transitions ciblées (obs_dim=17, act_dim=6)
+
+[MCTS] Augmentation — cible 5,000 transitions (sims=20, depth=5, k=5)
+  [calibrate_threshold] p90 = 0.2018  (mean=0.0884  max=0.9304)
+[MCTS] Branch points : 201
+[ReplayBuffer] +5,000 transitions → total 10,000
+[MCTS] Générées  : 5,000
+[MCTS] Buffer D′ : 10,000 transitions
+[ReplayBuffer] +5,000 transitions → total 1,005,000
+  +5,000 transitions synthétiques ciblées → D′
+  D′ final : 1,005,000 transitions
+
+[4] IQL final — 50,000 steps sur D′ ciblé...
+
+[IQL] Entraînement — method=critic_guided_mcts  buffer=1,005,000  steps=50,000
+  step       1/50,000  v=0.0269  q=27.0564  π=3.7736
+  step  10,000/50,000  v=0.7898  q=8.0512  π=-18.7492
+  step  20,000/50,000  v=1.8214  q=27.9998  π=-23.3090
+  step  30,000/50,000  v=2.8153  q=58.3290  π=-67.8833
+  step  40,000/50,000  v=5.9273  q=40.6671  π=-86.9707
+  step  50,000/50,000  v=3.2439  q=28.8532  π=-48.9382
+[IQL] Terminé — method=critic_guided_mcts
+[IQL] Sauvegardé → checkpoints/iql_critic_guided_walker2d-medium-v2.pt
+
+============================================================
+RÉSULTATS — Critic-Guided MCTS
+============================================================
+  États sélectionnés     : 5,000
+  A moyen tout D         : -0.3749
+  A moyen sélectionnés   : 8.8911  ← doit être > tout D
+  Transitions ajoutées   : 5,000
+  Q-loss final           : 28.8532
+  Sauvegardé → results/critic_guided_walker2d-medium-v2.json
+============================================================

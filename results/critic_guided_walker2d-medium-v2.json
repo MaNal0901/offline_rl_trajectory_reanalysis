@@ -1,0 +1,10 @@
+{
+  "env": "walker2d-medium-v2",
+  "n_selected": 5000,
+  "n_synth_added": 5000,
+  "buffer_D": 1000000,
+  "buffer_Dprime": 1005000,
+  "adv_mean_all": -0.3749,
+  "adv_mean_sel": 8.8911,
+  "final_q_loss": 28.8532
+}

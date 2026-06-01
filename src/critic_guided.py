@@ -232,7 +232,7 @@ def run_critic_guided(
     }
 
     os.makedirs("results", exist_ok=True)
-    out = f"results/critic_guided_{env_name}.json"
+    out = f"results/critic_guided_{env_name}_conservative.json"
     with open(out, "w") as f:
         json.dump(results, f, indent=2)
 

@@ -460,6 +460,49 @@ def plot_critic_guided_comparison() -> str:
     print(f"  ✓ {path}")
     return path
 
+def plot_divergence_trajectory() -> str:
+    """
+    Trajectoire Q-Loss pendant l'entraînement IQL :
+    n_new=50K (diverge) vs n_new=5K (stable) — Hopper
+    """
+    steps = [1, 10_000, 20_000, 30_000, 40_000, 50_000]
+
+    # Données depuis les logs hopper
+    q_50k = [21.2,  9.5,  120.9, 279.1, 117.4, 200.7]   # warmup=20k, n_new=50k
+    q_5k  = [20.2,  8.3,   12.3,  14.3,   6.9,  10.4]   # warmup=20k, n_new=5k
+
+    fig, ax = plt.subplots(figsize=(9, 4.5))
+
+    ax.plot(steps, q_50k, color=COLOR_DIVERGE, linewidth=2,
+            marker="o", markersize=5, label=r"$n_\mathrm{new}=50\,000$  →  divergence")
+    ax.plot(steps, q_5k,  color=COLORS["critic_guided"], linewidth=2,
+            marker="s", markersize=5, label=r"$n_\mathrm{new}=5\,000$  →  stable")
+
+    # Annoter le point de divergence
+    ax.annotate("Divergence\nat step 20k",
+                xy=(20_000, 120.9), xytext=(25_000, 160),
+                fontsize=8.5, color=COLOR_DIVERGE,
+                arrowprops=dict(arrowstyle="->", color=COLOR_DIVERGE, lw=1.2))
+
+    ax.set_xlabel("Training steps")
+    ax.set_ylabel("Q-Loss")
+    ax.set_title(
+        r"Q-Loss trajectory — Critic-Guided MCTS on Hopper"
+        "\n"
+        r"Effect of augmentation volume ($n_\mathrm{new}$, warmup = 20\,000 steps)",
+        fontsize=10
+    )
+    ax.legend(fontsize=9)
+    ax.set_yscale("log")   # log scale pour voir les deux courbes lisiblement
+    ax.set_xlim(-1_000, 52_000)
+
+    path = "results/plots/divergence_trajectory.png"
+    plt.tight_layout()
+    plt.savefig(path, dpi=150, bbox_inches="tight", facecolor=COLOR_BG)
+    plt.close()
+    print(f"  ✓ {path}")
+    return path
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 7. Rapport HTML
@@ -673,6 +716,7 @@ def main():
     plot_buffer_acceptance()
     plot_sensitivity()
     plot_critic_guided_comparison()
+    plot_divergence_trajectory()
 
     print("\n── Rapport HTML ────────────────────────────────────────")
     generate_html_report()

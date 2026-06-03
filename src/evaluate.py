@@ -1,9 +1,9 @@
 """
-evaluate.py — Comparaison finale des 4 méthodes + Critic-Guided
-================================================================
-Palette académique standard ML/RL — fond blanc, cohérent avec rapport.
+evaluate.py — Final comparison of 4 methods + Critic-Guided
+============================================================
+Standard academic ML/RL palette — white background, consistent with report.
 
-Usage :
+Usage:
     python src/evaluate.py
 """
 
@@ -14,16 +14,12 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Palette académique
-# ─────────────────────────────────────────────────────────────────────────────
-
 COLORS = {
     "baseline":        "#4E4E4E",
     "vine":            "#1F77B4",
     "mcts":            "#2CA02C",
     "vae":             "#FF7F0E",
-    "critic_guided":   "#9467BD",   # violet — méthode Phase 2
+    "critic_guided":   "#9467BD",
 }
 
 COLORS_ENV = {
@@ -73,10 +69,6 @@ plt.rcParams.update({
 
 os.makedirs("results/plots", exist_ok=True)
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Données Phase 1
-# ─────────────────────────────────────────────────────────────────────────────
-
 RESULTS = {
     "hopper-medium-v2": {
         "5k": {
@@ -122,11 +114,6 @@ RESULTS = {
     },
 }
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Données Phase 2 — Critic-Guided MCTS (conservative)
-# warmup=20K, n_sel=5K, n_new=5K
-# ─────────────────────────────────────────────────────────────────────────────
-
 CRITIC_GUIDED = {
     "hopper-medium-v2": {
         "q_loss":       10.4224,
@@ -158,16 +145,12 @@ SENSITIVITY = {
 }
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# 1. Tableau console
-# ─────────────────────────────────────────────────────────────────────────────
-
 def print_full_table() -> None:
     print(f"\n{'='*72}")
-    print("PHASE 1 — Q-Loss final (lower is better)")
+    print("PHASE 1 : Final Q-Loss (lower is better)")
     print(f"{'='*72}")
     print(f"{'Env':<22} {'Steps':>5} {'Baseline':>10} {'Vine':>12} "
-          f"{'MCTS':>10} {'VAE':>10}  Gagnant")
+          f"{'MCTS':>10} {'VAE':>10}  Winner")
     print("-" * 72)
     for env in ENVS:
         for step in STEPS:
@@ -185,22 +168,22 @@ def print_full_table() -> None:
                   f"{v_str} {m:>10.2f} {a:>10.2f}  {winner}")
 
     print(f"\n{'='*72}")
-    print("PHASE 2 — Critic-Guided MCTS vs MCTS random 50k")
+    print("PHASE 2 : Critic-Guided MCTS vs Random MCTS 50k")
     print(f"{'='*72}")
     print(f"{'Env':<22} {'MCTS random':>12} {'Critic-guided':>14} "
-          f"{'Δ':>8}  {'Meilleur':>10}")
+          f"{'Delta':>8}  {'Best':>10}")
     print("-" * 72)
     for env in ENVS:
         mcts_r = RESULTS[env]["50k"]["mcts"]["q_loss"]
         cg     = CRITIC_GUIDED[env]["q_loss"]
         delta  = cg - mcts_r
-        winner = "Critic-guided ✓" if cg < mcts_r else "MCTS random"
+        winner = "Critic-guided" if cg < mcts_r else "MCTS random"
         sign   = "+" if delta > 0 else ""
         print(f"{ENV_SHORT[env]:<22} {mcts_r:>12.2f} {cg:>14.2f} "
               f"{sign}{delta:>7.2f}  {winner}")
 
     print(f"\n{'='*72}")
-    print("PHASE 2 — Advantage A(s,a) — preuve de sélection ciblée")
+    print("PHASE 2 : Advantage A(s,a), evidence of targeted selection")
     print(f"{'='*72}")
     print(f"{'Env':<22} {'A_mean_all':>12} {'A_mean_sel':>12}  {'ratio':>8}")
     print("-" * 72)
@@ -210,10 +193,6 @@ def print_full_table() -> None:
         print(f"{ENV_SHORT[env]:<22} {cg['adv_mean_all']:>12.4f} "
               f"{cg['adv_mean_sel']:>12.4f}  {r:>7.1f}x")
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# 2. Graphe 1 — Q-Loss Phase 1
-# ─────────────────────────────────────────────────────────────────────────────
 
 def plot_qloss_comparison() -> str:
     configs = [
@@ -241,24 +220,20 @@ def plot_qloss_comparison() -> str:
 
     ax.set_xticks(x)
     ax.set_xticklabels([c[0] for c in configs], rotation=30, ha="right")
-    ax.set_ylabel("Q-Loss final (plafonné à 60)")
-    ax.set_title("Phase 1 — Comparaison Q-Loss : Vine / MCTS / VAE vs Baseline",
+    ax.set_ylabel("Final Q-Loss (capped at 60)")
+    ax.set_title("Phase 1 : Q-Loss Comparison: Vine / MCTS / VAE vs Baseline",
                  fontsize=12, pad=12)
     ax.legend(loc="upper left")
     ax.set_ylim(0, 68)
     ax.axhline(y=0, color="#AAAAAA", linewidth=0.8)
 
-    path = "results/plots/qloss_comparison.png"
+    path = "results/plots/qloss_comparison.pdf"
     plt.tight_layout()
-    plt.savefig(path, dpi=150, bbox_inches="tight", facecolor=COLOR_BG)
+    plt.savefig(path, format="pdf", bbox_inches="tight", facecolor=COLOR_BG)
     plt.close()
     print(f"  ✓ {path}")
     return path
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# 3. Graphe 2 — Heatmap stabilité
-# ─────────────────────────────────────────────────────────────────────────────
 
 def plot_stability_heatmap() -> str:
     configs  = ["Hopper 5k","Hopper 50k","Walker 5k","Walker 50k","HC 5k","HC 50k"]
@@ -293,20 +268,16 @@ def plot_stability_heatmap() -> str:
 
     cbar = plt.colorbar(im, ax=ax, fraction=0.03, pad=0.02)
     cbar.set_label("ratio vs baseline", fontsize=9)
-    ax.set_title("Stabilité — ratio Q-Loss / Baseline", fontsize=11, pad=10)
+    ax.set_title("Stability : Q-Loss / Baseline ratio", fontsize=11, pad=10)
     ax.grid(False)
 
-    path = "results/plots/stability_heatmap.png"
+    path = "results/plots/stability_heatmap.pdf"
     plt.tight_layout()
-    plt.savefig(path, dpi=150, bbox_inches="tight", facecolor=COLOR_BG)
+    plt.savefig(path, format="pdf", bbox_inches="tight", facecolor=COLOR_BG)
     plt.close()
     print(f"  ✓ {path}")
     return path
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# 4. Graphe 3 — Buffer size et acceptance rate
-# ─────────────────────────────────────────────────────────────────────────────
 
 def plot_buffer_acceptance() -> str:
     fig, axes = plt.subplots(1, 2, figsize=(13, 4.5))
@@ -328,8 +299,8 @@ def plot_buffer_acceptance() -> str:
     ax.bar(x + w, vals_a, w, label="VAE",  color=COLORS["vae"],    alpha=0.85, edgecolor="white")
     ax.set_xticks(x)
     ax.set_xticklabels(lbls, rotation=38, ha="right", fontsize=8.5)
-    ax.set_ylabel("Transitions synthétiques ajoutées (K)")
-    ax.set_title("Transitions générées par méthode", fontsize=10)
+    ax.set_ylabel("Synthetic transitions added (K)")
+    ax.set_title("Generated transitions per method", fontsize=10)
     ax.legend(fontsize=9)
 
     vine_acc, vae_acc, lbls2 = [], [], []
@@ -349,20 +320,16 @@ def plot_buffer_acceptance() -> str:
     ax.set_ylabel("Acceptance rate (%)")
     ax.set_ylim(0, 110)
     ax.axhline(y=50, color="#AAAAAA", linestyle="--", linewidth=0.9, label="50% ref")
-    ax.set_title("Taux d'acceptation — Vine vs VAE", fontsize=10)
+    ax.set_title("Acceptance rate : Vine vs VAE", fontsize=10)
     ax.legend(fontsize=9)
 
-    path = "results/plots/buffer_acceptance.png"
+    path = "results/plots/buffer_acceptance.pdf"
     plt.tight_layout()
-    plt.savefig(path, dpi=150, bbox_inches="tight", facecolor=COLOR_BG)
+    plt.savefig(path, format="pdf", bbox_inches="tight", facecolor=COLOR_BG)
     plt.close()
     print(f"  ✓ {path}")
     return path
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# 5. Graphe 4 — Sensitivity analysis Vine
-# ─────────────────────────────────────────────────────────────────────────────
 
 def plot_sensitivity() -> str:
     percentiles = ["p50", "p75", "p90"]
@@ -372,7 +339,7 @@ def plot_sensitivity() -> str:
         [SENSITIVITY[p]["n_added"]/1000 for p in percentiles],
         [SENSITIVITY[p]["q_loss"]       for p in percentiles],
     ]
-    titles   = ["Seuil d'incertitude", "Transitions ajoutées (K)", "Q-Loss IQL final"]
+    titles   = ["Uncertainty threshold", "Transitions added (K)", "Final IQL Q-Loss"]
     y_labels = ["Threshold value", "Transitions (K)", "Q-Loss"]
 
     fig, axes = plt.subplots(1, 3, figsize=(12, 4))
@@ -387,41 +354,30 @@ def plot_sensitivity() -> str:
                     f"{val:.4f}" if idx == 0 else f"{val:.1f}",
                     ha="center", va="bottom", fontsize=8, color=COLOR_TEXT)
 
-    fig.suptitle("Sensitivity analysis — seuil Vine (hopper, 5k steps)",
+    fig.suptitle("Sensitivity analysis : Vine threshold (Hopper, 5k steps)",
                  fontsize=11, y=1.02)
-    path = "results/plots/sensitivity_vine.png"
+    path = "results/plots/sensitivity_vine.pdf"
     plt.tight_layout()
-    plt.savefig(path, dpi=150, bbox_inches="tight", facecolor=COLOR_BG)
+    plt.savefig(path, format="pdf", bbox_inches="tight", facecolor=COLOR_BG)
     plt.close()
     print(f"  ✓ {path}")
     return path
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# 6. Graphe 5 — Critic-Guided vs MCTS random (NOUVEAU)
-# ─────────────────────────────────────────────────────────────────────────────
-
 def plot_critic_guided_comparison() -> str:
-    """
-    Graphe à 2 panneaux :
-    - Gauche  : Q-Loss MCTS random vs Critic-guided (barres groupées)
-    - Droite  : A(s,a) moyen tout D vs sélectionnés (preuve de sélection)
-    """
     env_labels = [ENV_SHORT[e] for e in ENVS]
     x          = np.arange(len(ENVS))
     fig, axes  = plt.subplots(1, 2, figsize=(13, 5))
 
-    # ── Panneau gauche : Q-Loss ───────────────────────────────────────────
     ax = axes[0]
     mcts_q = [RESULTS[e]["50k"]["mcts"]["q_loss"]  for e in ENVS]
     cg_q   = [CRITIC_GUIDED[e]["q_loss"]            for e in ENVS]
 
-    bars_m = ax.bar(x - 0.2, mcts_q, 0.35, label="MCTS random (50k)",
+    bars_m = ax.bar(x - 0.2, mcts_q, 0.35, label="Random MCTS (50k)",
                     color=COLORS["mcts"], alpha=0.85, edgecolor="white")
-    bars_c = ax.bar(x + 0.2, cg_q,   0.35, label="Critic-guided MCTS",
+    bars_c = ax.bar(x + 0.2, cg_q,   0.35, label="Critic-Guided MCTS",
                     color=COLORS["critic_guided"], alpha=0.85, edgecolor="white")
 
-    # Annotations delta
     for i, (mr, cg) in enumerate(zip(mcts_q, cg_q)):
         delta = cg - mr
         sign  = "+" if delta > 0 else ""
@@ -432,44 +388,38 @@ def plot_critic_guided_comparison() -> str:
 
     ax.set_xticks(x)
     ax.set_xticklabels(env_labels)
-    ax.set_ylabel("Q-Loss final")
-    ax.set_title("Phase 2 — Critic-Guided vs MCTS Random", fontsize=11)
+    ax.set_ylabel("Final Q-Loss")
+    ax.set_title("Phase 2 — Critic-Guided vs Random MCTS", fontsize=11)
     ax.legend(fontsize=9)
 
-    # ── Panneau droit : Advantage A(s,a) ─────────────────────────────────
     ax = axes[1]
     adv_all = [CRITIC_GUIDED[e]["adv_mean_all"] for e in ENVS]
     adv_sel = [CRITIC_GUIDED[e]["adv_mean_sel"] for e in ENVS]
 
-    ax.bar(x - 0.2, adv_all, 0.35, label="A moyen tout D",
+    ax.bar(x - 0.2, adv_all, 0.35, label="A mean full D",
            color="#AAAAAA", alpha=0.85, edgecolor="white")
-    ax.bar(x + 0.2, adv_sel, 0.35, label="A moyen sélectionnés",
+    ax.bar(x + 0.2, adv_sel, 0.35, label="A mean selected",
            color=COLORS["critic_guided"], alpha=0.85, edgecolor="white")
 
     ax.axhline(y=0, color="#AAAAAA", linewidth=0.8, linestyle="--")
     ax.set_xticks(x)
     ax.set_xticklabels(env_labels)
     ax.set_ylabel("A(s,a) = Q(s,a) − V(s)")
-    ax.set_title("Sélection critic-guided — A(s,a) élevé ✓", fontsize=11)
+    ax.set_title("Critic-guided selection — high A(s,a)", fontsize=11)
     ax.legend(fontsize=9)
 
-    path = "results/plots/critic_guided_comparison.png"
+    path = "results/plots/critic_guided_comparison.pdf"
     plt.tight_layout()
-    plt.savefig(path, dpi=150, bbox_inches="tight", facecolor=COLOR_BG)
+    plt.savefig(path, format="pdf", bbox_inches="tight", facecolor=COLOR_BG)
     plt.close()
     print(f"  ✓ {path}")
     return path
 
-def plot_divergence_trajectory() -> str:
-    """
-    Trajectoire Q-Loss pendant l'entraînement IQL :
-    n_new=50K (diverge) vs n_new=5K (stable) — Hopper
-    """
-    steps = [1, 10_000, 20_000, 30_000, 40_000, 50_000]
 
-    # Données depuis les logs hopper
-    q_50k = [21.2,  9.5,  120.9, 279.1, 117.4, 200.7]   # warmup=20k, n_new=50k
-    q_5k  = [20.2,  8.3,   12.3,  14.3,   6.9,  10.4]   # warmup=20k, n_new=5k
+def plot_divergence_trajectory() -> str:
+    steps = [1, 10_000, 20_000, 30_000, 40_000, 50_000]
+    q_50k = [21.2,  9.5,  120.9, 279.1, 117.4, 200.7]
+    q_5k  = [20.2,  8.3,   12.3,  14.3,   6.9,  10.4]
 
     fig, ax = plt.subplots(figsize=(9, 4.5))
 
@@ -478,7 +428,6 @@ def plot_divergence_trajectory() -> str:
     ax.plot(steps, q_5k,  color=COLORS["critic_guided"], linewidth=2,
             marker="s", markersize=5, label=r"$n_\mathrm{new}=5\,000$  →  stable")
 
-    # Annoter le point de divergence
     ax.annotate("Divergence\nat step 20k",
                 xy=(20_000, 120.9), xytext=(25_000, 160),
                 fontsize=8.5, color=COLOR_DIVERGE,
@@ -487,26 +436,22 @@ def plot_divergence_trajectory() -> str:
     ax.set_xlabel("Training steps")
     ax.set_ylabel("Q-Loss")
     ax.set_title(
-        r"Q-Loss trajectory — Critic-Guided MCTS on Hopper"
+        r"Q-Loss trajectory :Critic-Guided MCTS on Hopper"
         "\n"
         r"Effect of augmentation volume ($n_\mathrm{new}$, warmup = 20\,000 steps)",
         fontsize=10
     )
     ax.legend(fontsize=9)
-    ax.set_yscale("log")   # log scale pour voir les deux courbes lisiblement
+    ax.set_yscale("log")
     ax.set_xlim(-1_000, 52_000)
 
-    path = "results/plots/divergence_trajectory.png"
+    path = "results/plots/divergence_trajectory.pdf"
     plt.tight_layout()
-    plt.savefig(path, dpi=150, bbox_inches="tight", facecolor=COLOR_BG)
+    plt.savefig(path, format="pdf", bbox_inches="tight", facecolor=COLOR_BG)
     plt.close()
     print(f"  ✓ {path}")
     return path
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# 7. Rapport HTML
-# ─────────────────────────────────────────────────────────────────────────────
 
 def generate_html_report() -> str:
     rows_5k = rows_50k = ""
@@ -514,7 +459,7 @@ def generate_html_report() -> str:
         for step, target in [("5k", "rows_5k"), ("50k", "rows_50k")]:
             d = RESULTS[env][step]
             b, v, m, a = (d[x]["q_loss"] for x in METHODS)
-            v_str = '<span style="color:#D62728;font-weight:600">DIVERGE ❌</span>' \
+            v_str = '<span style="color:#D62728;font-weight:600">DIVERGE</span>' \
                     if v > 1_000_000 else f"{v:.2f}"
             safe   = {"baseline": b, "mcts": m, "vae": a}
             if v < 1_000_000:
@@ -544,14 +489,14 @@ def generate_html_report() -> str:
           <td {"style='color:#2CA02C'" if better else "style='color:#D62728'"}>{("+" if delta > 0 else "") + str(round(delta,2))}</td>
           <td>{cg["adv_mean_all"]:.4f}</td>
           <td style="color:#9467BD;font-weight:600">{cg["adv_mean_sel"]:.4f}</td>
-          <td><span class="{'badge-good' if better else 'badge-warn'}">{('Critic ✓' if better else 'MCTS')}</span></td>
+          <td><span class="{'badge-good' if better else 'badge-warn'}">{('Critic' if better else 'MCTS')}</span></td>
         </tr>"""
 
     html = f"""<!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Trajectory Reanalysis — Rapport complet</title>
+<title>Trajectory Reanalysis — Full Report</title>
 <style>
   * {{ box-sizing:border-box; margin:0; padding:0; }}
   body {{ font-family:Arial, sans-serif; background:#fff;
@@ -606,87 +551,77 @@ def generate_html_report() -> str:
   <div class="card">
     <div class="card-label">Baseline</div>
     <div class="card-val" style="color:#4E4E4E">7.83</div>
-    <div class="card-sub">score moyen 3 envs</div>
+    <div class="card-sub">avg score 3 envs</div>
   </div>
   <div class="card">
     <div class="card-label">Vine</div>
     <div class="card-val" style="color:#1F77B4">7.83</div>
-    <div class="card-sub">⚠ diverge Hopper 50k</div>
+    <div class="card-sub">⚠ diverges Hopper 50k</div>
   </div>
   <div class="card">
     <div class="card-label">MCTS</div>
     <div class="card-val" style="color:#2CA02C">7.82</div>
-    <div class="card-sub">✓ zéro divergence</div>
+    <div class="card-sub">✓ zero divergence</div>
   </div>
   <div class="card">
     <div class="card-label">VAE</div>
     <div class="card-val" style="color:#FF7F0E">7.83</div>
-    <div class="card-sub">meilleur HalfCheetah</div>
+    <div class="card-sub">best HalfCheetah</div>
   </div>
   <div class="card">
     <div class="card-label">Critic-Guided</div>
     <div class="card-val" style="color:#9467BD">Phase 2</div>
-    <div class="card-sub">✓ Walker+HC améliorés</div>
+    <div class="card-sub">✓ Walker+HC improved</div>
   </div>
 </div>
 
 <div class="rec">
-  <strong style="color:#2CA02C">Phase 1 — MCTS meilleure méthode</strong><br>
-  Seule méthode sans aucune instabilité sur les 6 configurations.
-  Vine diverge Hopper 50k. VAE explose Walker2d 5k.
+  <strong style="color:#2CA02C">Phase 1 — MCTS best method</strong><br>
+  Only method with no instability across all 6 configurations.
+  Vine diverges on Hopper 50k. VAE unstable on Walker2d 5k.
 </div>
 
 <div class="rec2">
-  <strong style="color:#9467BD">Phase 2 — Critic-Guided améliore Walker2d et HalfCheetah</strong><br>
-  Walker2d : Q-Loss 28.85 vs 32.61 (−12%) ✓ &nbsp;|&nbsp;
-  HalfCheetah : Q-Loss 45.18 vs 46.46 (−3%) ✓<br>
-  La sélection par advantage A(s,a) identifie correctement les trajectoires
-  sous-exploitées (A_mean_sel 24–34x supérieur à A_mean_all).
+  <strong style="color:#9467BD">Phase 2 — Critic-Guided improves Walker2d and HalfCheetah</strong><br>
+  Walker2d: Q-Loss 28.85 vs 32.61 (−12%) ✓ &nbsp;|&nbsp;
+  HalfCheetah: Q-Loss 45.18 vs 46.46 (−3%) ✓<br>
+  Advantage-based selection A(s,a) correctly identifies underexploited trajectories
+  (A_mean_sel 24–34x higher than A_mean_all).
 </div>
 
-<h2>Phase 1 — Q-Loss comparatif</h2>
-<img src="plots/qloss_comparison.png" alt="Q-Loss comparison">
+<h2>Phase 1 — Q-Loss Comparison</h2>
+<p style="font-size:0.82rem;color:#888;margin-bottom:0.5rem">Figures saved as PDF — see results/plots/</p>
 
-<h2>Résultats 5k steps</h2>
+<h2>Results at 5k steps</h2>
 <table>
-  <thead><tr><th>Env</th><th>Baseline</th><th>Vine</th><th>MCTS</th><th>VAE</th><th>Gagnant</th></tr></thead>
+  <thead><tr><th>Env</th><th>Baseline</th><th>Vine</th><th>MCTS</th><th>VAE</th><th>Winner</th></tr></thead>
   <tbody>{rows_5k}</tbody>
 </table>
 
-<h2>Résultats 50k steps</h2>
-<div class="warn">⚠ Vine Hopper 50k : Q-Loss → 5 299 436 (divergence complète)</div>
+<h2>Results at 50k steps</h2>
+<div class="warn">⚠ Vine Hopper 50k: Q-Loss → 5,299,436 (complete divergence)</div>
 <table>
-  <thead><tr><th>Env</th><th>Baseline</th><th>Vine</th><th>MCTS</th><th>VAE</th><th>Gagnant</th></tr></thead>
+  <thead><tr><th>Env</th><th>Baseline</th><th>Vine</th><th>MCTS</th><th>VAE</th><th>Winner</th></tr></thead>
   <tbody>{rows_50k}</tbody>
 </table>
 
-<h2>Heatmap stabilité</h2>
-<img src="plots/stability_heatmap.png" alt="Stability heatmap">
-
 <h2>Phase 2 — Critic-Guided MCTS</h2>
-<img src="plots/critic_guided_comparison.png" alt="Critic-guided comparison">
 <table>
   <thead><tr>
-    <th>Env</th><th>MCTS random</th><th>Critic-guided</th>
-    <th>Δ Q-Loss</th><th>A_mean_all</th><th>A_mean_sel</th><th>Résultat</th>
+    <th>Env</th><th>MCTS Random</th><th>Critic-Guided</th>
+    <th>Delta Q-Loss</th><th>A_mean_all</th><th>A_mean_sel</th><th>Result</th>
   </tr></thead>
   <tbody>{rows_cg}</tbody>
 </table>
 
-<h2>Transitions générées et taux d'acceptation</h2>
-<img src="plots/buffer_acceptance.png" alt="Buffer and acceptance">
-
-<h2>Sensitivity analysis — seuil Vine</h2>
-<img src="plots/sensitivity_vine.png" alt="Sensitivity analysis">
-
-<h2>Observations clés</h2>
+<h2>Key findings</h2>
 <ul>
-  <li>MCTS est la méthode la plus robuste (Phase 1) — zéro divergence sur 6 configurations</li>
-  <li>Vine diverge à 50k steps (reward hors distribution) — rewards synthétiques non clippées</li>
-  <li>VAE excelle sur HalfCheetah 50k mais instable sur Walker2d 5k</li>
-  <li>Critic-guided améliore MCTS sur Walker2d (−12%) et HalfCheetah (−3%)</li>
-  <li>Le warmup critic (20K steps) est critique — 5K insuffisant → divergence IQL</li>
-  <li>A_mean_sel >> A_mean_all confirme que le critic sélectionne des trajectoires sous-exploitées</li>
+  <li>MCTS is the most robust method (Phase 1) — zero divergence across 6 configurations</li>
+  <li>Vine diverges at 50k steps (out-of-distribution rewards) — unclipped synthetic rewards</li>
+  <li>VAE excels on HalfCheetah 50k but unstable on Walker2d 5k</li>
+  <li>Critic-guided improves MCTS on Walker2d (−12%) and HalfCheetah (−3%)</li>
+  <li>Critic warmup (20K steps) is critical — 5K insufficient leads to IQL divergence</li>
+  <li>A_mean_sel >> A_mean_all confirms the critic selects underexploited trajectories</li>
 </ul>
 
 </body>
@@ -699,18 +634,14 @@ def generate_html_report() -> str:
     return path
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Main
-# ─────────────────────────────────────────────────────────────────────────────
-
 def main():
     print("=" * 60)
-    print("EVALUATE.PY — Phase 1 + Phase 2 Critic-Guided")
+    print("EVALUATE.PY : Phase 1 + Phase 2 Critic-Guided")
     print("=" * 60)
 
     print_full_table()
 
-    print("\n── Génération des graphes ──────────────────────────────")
+    print("\n── Generating plots ────────────────────────────────────")
     plot_qloss_comparison()
     plot_stability_heatmap()
     plot_buffer_acceptance()
@@ -718,16 +649,17 @@ def main():
     plot_critic_guided_comparison()
     plot_divergence_trajectory()
 
-    print("\n── Rapport HTML ────────────────────────────────────────")
+    print("\n── HTML Report ─────────────────────────────────────────")
     generate_html_report()
 
     print("\n" + "=" * 60)
-    print("Fichiers générés :")
-    print("  results/plots/qloss_comparison.png")
-    print("  results/plots/stability_heatmap.png")
-    print("  results/plots/buffer_acceptance.png")
-    print("  results/plots/sensitivity_vine.png")
-    print("  results/plots/critic_guided_comparison.png  ← NOUVEAU")
+    print("Generated files:")
+    print("  results/plots/qloss_comparison.pdf")
+    print("  results/plots/stability_heatmap.pdf")
+    print("  results/plots/buffer_acceptance.pdf")
+    print("  results/plots/sensitivity_vine.pdf")
+    print("  results/plots/critic_guided_comparison.pdf")
+    print("  results/plots/divergence_trajectory.pdf")
     print("  results/evaluate_report.html")
     print("=" * 60)
 

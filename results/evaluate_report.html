@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Trajectory Reanalysis — Rapport complet</title>
+<title>Trajectory Reanalysis — Full Report</title>
 <style>
   * { box-sizing:border-box; margin:0; padding:0; }
   body { font-family:Arial, sans-serif; background:#fff;
@@ -57,50 +57,50 @@
   <div class="card">
     <div class="card-label">Baseline</div>
     <div class="card-val" style="color:#4E4E4E">7.83</div>
-    <div class="card-sub">score moyen 3 envs</div>
+    <div class="card-sub">avg score 3 envs</div>
   </div>
   <div class="card">
     <div class="card-label">Vine</div>
     <div class="card-val" style="color:#1F77B4">7.83</div>
-    <div class="card-sub">⚠ diverge Hopper 50k</div>
+    <div class="card-sub">⚠ diverges Hopper 50k</div>
   </div>
   <div class="card">
     <div class="card-label">MCTS</div>
     <div class="card-val" style="color:#2CA02C">7.82</div>
-    <div class="card-sub">✓ zéro divergence</div>
+    <div class="card-sub">✓ zero divergence</div>
   </div>
   <div class="card">
     <div class="card-label">VAE</div>
     <div class="card-val" style="color:#FF7F0E">7.83</div>
-    <div class="card-sub">meilleur HalfCheetah</div>
+    <div class="card-sub">best HalfCheetah</div>
   </div>
   <div class="card">
     <div class="card-label">Critic-Guided</div>
     <div class="card-val" style="color:#9467BD">Phase 2</div>
-    <div class="card-sub">✓ Walker+HC améliorés</div>
+    <div class="card-sub">✓ Walker+HC improved</div>
   </div>
 </div>
 
 <div class="rec">
-  <strong style="color:#2CA02C">Phase 1 — MCTS meilleure méthode</strong><br>
-  Seule méthode sans aucune instabilité sur les 6 configurations.
-  Vine diverge Hopper 50k. VAE explose Walker2d 5k.
+  <strong style="color:#2CA02C">Phase 1 — MCTS best method</strong><br>
+  Only method with no instability across all 6 configurations.
+  Vine diverges on Hopper 50k. VAE unstable on Walker2d 5k.
 </div>
 
 <div class="rec2">
-  <strong style="color:#9467BD">Phase 2 — Critic-Guided améliore Walker2d et HalfCheetah</strong><br>
-  Walker2d : Q-Loss 28.85 vs 32.61 (−12%) ✓ &nbsp;|&nbsp;
-  HalfCheetah : Q-Loss 45.18 vs 46.46 (−3%) ✓<br>
-  La sélection par advantage A(s,a) identifie correctement les trajectoires
-  sous-exploitées (A_mean_sel 24–34x supérieur à A_mean_all).
+  <strong style="color:#9467BD">Phase 2 — Critic-Guided improves Walker2d and HalfCheetah</strong><br>
+  Walker2d: Q-Loss 28.85 vs 32.61 (−12%) ✓ &nbsp;|&nbsp;
+  HalfCheetah: Q-Loss 45.18 vs 46.46 (−3%) ✓<br>
+  Advantage-based selection A(s,a) correctly identifies underexploited trajectories
+  (A_mean_sel 24–34x higher than A_mean_all).
 </div>
 
-<h2>Phase 1 — Q-Loss comparatif</h2>
-<img src="plots/qloss_comparison.png" alt="Q-Loss comparison">
+<h2>Phase 1 — Q-Loss Comparison</h2>
+<p style="font-size:0.82rem;color:#888;margin-bottom:0.5rem">Figures saved as PDF — see results/plots/</p>
 
-<h2>Résultats 5k steps</h2>
+<h2>Results at 5k steps</h2>
 <table>
-  <thead><tr><th>Env</th><th>Baseline</th><th>Vine</th><th>MCTS</th><th>VAE</th><th>Gagnant</th></tr></thead>
+  <thead><tr><th>Env</th><th>Baseline</th><th>Vine</th><th>MCTS</th><th>VAE</th><th>Winner</th></tr></thead>
   <tbody><tr>
               <td>Hopper</td><td>1.50</td><td>1.84</td>
               <td style="color:#2CA02C;font-weight:600">2.30</td>
@@ -119,12 +119,12 @@
             </tr></tbody>
 </table>
 
-<h2>Résultats 50k steps</h2>
-<div class="warn">⚠ Vine Hopper 50k : Q-Loss → 5 299 436 (divergence complète)</div>
+<h2>Results at 50k steps</h2>
+<div class="warn">⚠ Vine Hopper 50k: Q-Loss → 5,299,436 (complete divergence)</div>
 <table>
-  <thead><tr><th>Env</th><th>Baseline</th><th>Vine</th><th>MCTS</th><th>VAE</th><th>Gagnant</th></tr></thead>
+  <thead><tr><th>Env</th><th>Baseline</th><th>Vine</th><th>MCTS</th><th>VAE</th><th>Winner</th></tr></thead>
   <tbody><tr>
-              <td>Hopper</td><td>10.39</td><td><span style="color:#D62728;font-weight:600">DIVERGE ❌</span></td>
+              <td>Hopper</td><td>10.39</td><td><span style="color:#D62728;font-weight:600">DIVERGE</span></td>
               <td style="color:#2CA02C;font-weight:600">5.94</td>
               <td>11.42</td>
               <td><span class="badge">MCTS</span></td>
@@ -141,15 +141,11 @@
             </tr></tbody>
 </table>
 
-<h2>Heatmap stabilité</h2>
-<img src="plots/stability_heatmap.png" alt="Stability heatmap">
-
 <h2>Phase 2 — Critic-Guided MCTS</h2>
-<img src="plots/critic_guided_comparison.png" alt="Critic-guided comparison">
 <table>
   <thead><tr>
-    <th>Env</th><th>MCTS random</th><th>Critic-guided</th>
-    <th>Δ Q-Loss</th><th>A_mean_all</th><th>A_mean_sel</th><th>Résultat</th>
+    <th>Env</th><th>MCTS Random</th><th>Critic-Guided</th>
+    <th>Delta Q-Loss</th><th>A_mean_all</th><th>A_mean_sel</th><th>Result</th>
   </tr></thead>
   <tbody><tr>
           <td>Hopper</td>
@@ -166,7 +162,7 @@
           <td style='color:#2CA02C'>-3.75</td>
           <td>-0.3749</td>
           <td style="color:#9467BD;font-weight:600">8.8911</td>
-          <td><span class="badge-good">Critic ✓</span></td>
+          <td><span class="badge-good">Critic</span></td>
         </tr><tr>
           <td>HalfCheetah</td>
           <td>46.46</td>
@@ -174,24 +170,18 @@
           <td style='color:#2CA02C'>-1.28</td>
           <td>-1.3892</td>
           <td style="color:#9467BD;font-weight:600">12.7769</td>
-          <td><span class="badge-good">Critic ✓</span></td>
+          <td><span class="badge-good">Critic</span></td>
         </tr></tbody>
 </table>
 
-<h2>Transitions générées et taux d'acceptation</h2>
-<img src="plots/buffer_acceptance.png" alt="Buffer and acceptance">
-
-<h2>Sensitivity analysis — seuil Vine</h2>
-<img src="plots/sensitivity_vine.png" alt="Sensitivity analysis">
-
-<h2>Observations clés</h2>
+<h2>Key findings</h2>
 <ul>
-  <li>MCTS est la méthode la plus robuste (Phase 1) — zéro divergence sur 6 configurations</li>
-  <li>Vine diverge à 50k steps (reward hors distribution) — rewards synthétiques non clippées</li>
-  <li>VAE excelle sur HalfCheetah 50k mais instable sur Walker2d 5k</li>
-  <li>Critic-guided améliore MCTS sur Walker2d (−12%) et HalfCheetah (−3%)</li>
-  <li>Le warmup critic (20K steps) est critique — 5K insuffisant → divergence IQL</li>
-  <li>A_mean_sel >> A_mean_all confirme que le critic sélectionne des trajectoires sous-exploitées</li>
+  <li>MCTS is the most robust method (Phase 1) — zero divergence across 6 configurations</li>
+  <li>Vine diverges at 50k steps (out-of-distribution rewards) — unclipped synthetic rewards</li>
+  <li>VAE excels on HalfCheetah 50k but unstable on Walker2d 5k</li>
+  <li>Critic-guided improves MCTS on Walker2d (−12%) and HalfCheetah (−3%)</li>
+  <li>Critic warmup (20K steps) is critical — 5K insufficient leads to IQL divergence</li>
+  <li>A_mean_sel >> A_mean_all confirms the critic selects underexploited trajectories</li>
 </ul>
 
 </body>
